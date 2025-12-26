@@ -1,33 +1,45 @@
+// components/reception/receptionContext.js
 import React, { createContext, useContext, useEffect, useState } from "react";
 import api from "../../utils/api";
 
-const ReceptionContext = createContext(null);
+const ReceptionContext = createContext();
 
-export default ReceptionContext;
+export const useReception = () => {
+  const context = useContext(ReceptionContext);
+  if (!context) {
+    throw new Error("useReception must be used within ReceptionProvider");
+  }
+  return context;
+};
 
-export function ReceptionProvider({ children, socket }) {
+export const ReceptionProvider = ({ children, socket }) => {
   const [visitors, setVisitors] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchVisitors = async () => {
-  try {
-    const res = await api.get("/visitor"); // ✅ FIXED
-    setVisitors(res.data);
-  } catch (err) {
-    console.error("Fetch visitors error:", err);
-  }
-};
+  const loadVisitors = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/visitor");
+      setVisitors(res.data || []);
+    } catch (err) {
+      console.error("Failed to load visitors", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchVisitors();
-  }, []);
+    loadVisitors();
 
-  // 🔴 REAL-TIME SOCKET UPDATES
-  useEffect(() => {
-    if (!socket) return;
+    if (socket) {
+      socket.on("visitors:update", (data) => {
+        setVisitors(data || []);
+      });
+    }
 
-    socket.on("visitor:update", fetchVisitors);
-    return () => socket.off("visitor:update");
+    return () => {
+      if (socket) socket.off("visitors:update");
+    };
   }, [socket]);
 
   return (
@@ -35,20 +47,10 @@ export function ReceptionProvider({ children, socket }) {
       value={{
         visitors,
         loading,
-        fetchVisitors,
+        loadVisitors,
       }}
     >
       {children}
     </ReceptionContext.Provider>
   );
-}
-
-export function useReception() {
-  const ctx = useContext(ReceptionContext);
-  if (!ctx) {
-    throw new Error("useReception must be used inside <ReceptionProvider>");
-  }
-  return ctx;
-}
-
-
+};
