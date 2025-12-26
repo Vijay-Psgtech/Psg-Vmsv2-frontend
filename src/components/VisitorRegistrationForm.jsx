@@ -1,238 +1,349 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import {
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Stack,
+  Alert,
+  CircularProgress,
+  Box,
+  InputAdornment,
+  Chip,
+  Typography,
+} from "@mui/material";
+
+import PersonIcon from "@mui/icons-material/Person";
+import PhoneIcon from "@mui/icons-material/Phone";
+import BusinessIcon from "@mui/icons-material/Business";
+import DoorFrontIcon from "@mui/icons-material/DoorFront";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import SaveIcon from "@mui/icons-material/Save";
+
 import api from "../utils/api";
-import bannerImage from "../assets/visitor-banner.jpg";
 
-const departments = ["HR", "IT", "Finance", "Admin", "Operations"];
-
-const VisitorRegistrationForm = () => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
+export default function VisitorRegistrationForm({ onSuccess }) {
+  const [form, setForm] = useState({
+    name: "",
     phone: "",
-    gender: "",
     company: "",
-    nid: "",
-    address: "",
-    department: "",
-    employee: "",
     purpose: "",
-    timeSlot: "",
-    building: "",
+    host: "",
+    gate: "",
+    date: "",
+    time: "",
+    expectedDuration: 120,
+    vehicleNumber: "",
   });
 
   const [employees, setEmployees] = useState([]);
-  const [filteredEmployees, setFilteredEmployees] = useState([]);
-  const [buildings, setBuildings] = useState([]);
-  const [selectedEmployeePhone, setSelectedEmployeePhone] = useState("");
-  const [message, setMessage] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [gates, setGates] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
 
-  /* ---------------- FETCH MASTER DATA ---------------- */
+  /* ================= LOAD EMPLOYEES & GATES ================= */
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       try {
-        const [empRes, bldRes] = await Promise.all([
-          api.get("/employees"),
-          api.get("/buildings"),
+        const [employeesRes, gatesRes] = await Promise.all([
+          api.get("/visitor/employees"),
+          api.get("/visitor/buildings"),
         ]);
-        setEmployees(empRes.data);
-        setBuildings(bldRes.data);
+        setEmployees(employeesRes.data || []);
+        setGates(gatesRes.data || []);
       } catch (err) {
-        console.warn("Using fallback data");
+        console.error("Failed to load data", err);
+        setError("Failed to load employees and gates");
       }
     };
-    fetchData();
+    loadData();
   }, []);
 
-  /* ---------------- FILTER EMPLOYEES ---------------- */
+  /* ================= SET DEFAULT DATE/TIME ================= */
   useEffect(() => {
-    if (!formData.department) {
-      setFilteredEmployees([]);
+    const now = new Date();
+    setForm((prev) => ({
+      ...prev,
+      date: now.toISOString().split("T")[0],
+      time: now.toTimeString().slice(0, 5),
+    }));
+  }, []);
+
+  /* ================= HANDLE CHANGE ================= */
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  /* ================= VALIDATE FORM ================= */
+  const validateForm = () => {
+    const errors = {};
+
+    if (!form.name.trim()) errors.name = "Name is required";
+    if (!form.phone.trim()) errors.phone = "Phone is required";
+    else if (!/^\d{10}$/.test(form.phone))
+      errors.phone = "Phone must be 10 digits";
+
+    if (!form.host) errors.host = "Host is required";
+    if (!form.gate) errors.gate = "Gate is required";
+    if (!form.date) errors.date = "Date is required";
+    if (!form.time) errors.time = "Time is required";
+
+    const selectedDateTime = new Date(`${form.date}T${form.time}`);
+    if (selectedDateTime.getTime() < Date.now() - 60000) {
+      errors.date = "Cannot schedule for past date/time";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  /* ================= SUBMIT ================= */
+  const submit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!validateForm()) {
+      setError("Please fix the errors below");
       return;
     }
-    setFilteredEmployees(
-      employees.filter((e) => e.department === formData.department)
-    );
-  }, [formData.department, employees]);
 
-  /* ---------------- HANDLERS ---------------- */
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setMessage("");
+    setLoading(true);
 
     try {
+      const allowedUntil = new Date(`${form.date}T${form.time}`);
+
       await api.post("/visitor/create", {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        host: formData.employee, // 👈 REQUIRED
-        gate: formData.building, // 👈 REQUIRED
+        ...form,
+        expectedDuration: Number(form.expectedDuration),
+        allowedUntil,
       });
 
-      setMessage("Visitor registered successfully. Awaiting admin approval.");
-
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
+      const now = new Date();
+      setForm({
+        name: "",
         phone: "",
-        gender: "",
         company: "",
-        nid: "",
-        address: "",
-        department: "",
-        employee: "",
         purpose: "",
-        timeSlot: "",
-        building: "",
+        host: "",
+        gate: "",
+        date: now.toISOString().split("T")[0],
+        time: now.toTimeString().slice(0, 5),
+        expectedDuration: 120,
+        vehicleNumber: "",
       });
+
+      onSuccess?.("✅ Visitor registered successfully! Pending admin approval.");
     } catch (err) {
-      console.error("Submission failed:", err);
-      setMessage(err.response?.data?.message || "Submission failed");
+      console.error("Registration error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
-  /* ---------------- UI ---------------- */
-  return (
-    <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: `url(${bannerImage})` }}
-    >
-      <div className="bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-2xl w-full max-w-4xl">
-        <h2 className="text-3xl font-semibold text-center mb-2">
-          Visitor Registration
-        </h2>
-        <p className="text-center text-gray-600 mb-6">
-          All visits require admin approval
-        </p>
+  /* ================= CALCULATE ALLOWED UNTIL ================= */
+  const getAllowedUntil = () => {
+    if (!form.date || !form.time) return "";
+    const dt = new Date(`${form.date}T${form.time}`);
+    dt.setMinutes(dt.getMinutes() + Number(form.expectedDuration));
+    return dt.toLocaleString();
+  };
 
-        {message && (
-          <p className="text-center text-blue-700 font-medium mb-4">
-            {message}
-          </p>
+  return (
+    <Box component="form" onSubmit={submit}>
+      <Stack spacing={2.5}>
+        {error && (
+          <Alert severity="error" onClose={() => setError("")}>
+            {error}
+          </Alert>
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
-          {[
-            ["firstName", "First Name"],
-            ["lastName", "Last Name"],
-            ["email", "Email"],
-            ["phone", "Phone"],
-            ["company", "Company"],
-            ["nid", "Aadhaar Number"],
-            ["address", "Address"],
-            ["purpose", "Purpose of Visit"],
-          ].map(([name, label]) => (
-            <input
-              key={name}
-              name={name}
-              placeholder={label}
-              value={formData[name]}
-              onChange={handleChange}
-              className="input-style"
-              required={[
-                "firstName",
-                "lastName",
-                "email",
-                "phone",
-                "nid",
-              ].includes(name)}
-            />
-          ))}
+        <TextField
+          label="Visitor Name"
+          name="name"
+          value={form.name}
+          onChange={onChange}
+          error={!!validationErrors.name}
+          helperText={validationErrors.name}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <PersonIcon />
+              </InputAdornment>
+            ),
+          }}
+          required
+          fullWidth
+        />
 
-          <select
-            name="gender"
-            value={formData.gender}
-            onChange={handleChange}
-            className="input-style"
-            required
-          >
-            <option value="">Gender</option>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Other</option>
-          </select>
+        <TextField
+          label="Phone Number"
+          name="phone"
+          value={form.phone}
+          onChange={onChange}
+          error={!!validationErrors.phone}
+          helperText={validationErrors.phone || "10 digit number"}
+          inputProps={{ maxLength: 10 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <PhoneIcon />
+              </InputAdornment>
+            ),
+          }}
+          required
+          fullWidth
+        />
 
-          <input
-            type="time"
-            name="timeSlot"
-            value={formData.timeSlot}
-            onChange={handleChange}
-            className="input-style"
-            required
+        <TextField
+          label="Company (Optional)"
+          name="company"
+          value={form.company}
+          onChange={onChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <BusinessIcon />
+              </InputAdornment>
+            ),
+          }}
+          fullWidth
+        />
+
+        <TextField
+          label="Purpose of Visit"
+          name="purpose"
+          value={form.purpose}
+          onChange={onChange}
+          fullWidth
+        />
+
+        <FormControl fullWidth error={!!validationErrors.host} required>
+          <InputLabel>Select Host</InputLabel>
+          <Select name="host" value={form.host} onChange={onChange} label="Select Host">
+            <MenuItem value="">
+              <em>-- Select Host --</em>
+            </MenuItem>
+            {employees.map((e) => (
+              <MenuItem key={e._id} value={e.name}>
+                {e.name} — {e.department}
+              </MenuItem>
+            ))}
+          </Select>
+          {validationErrors.host && (
+            <Typography variant="caption" color="error" sx={{ ml: 1.5 }}>
+              {validationErrors.host}
+            </Typography>
+          )}
+        </FormControl>
+
+        <FormControl fullWidth error={!!validationErrors.gate} required>
+          <InputLabel>Select Gate</InputLabel>
+          <Select name="gate" value={form.gate} onChange={onChange} label="Select Gate">
+            <MenuItem value="">
+              <em>-- Select Gate --</em>
+            </MenuItem>
+            {gates.map((g) => (
+              <MenuItem key={g._id} value={g._id}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <DoorFrontIcon fontSize="small" />
+                  <span>{g.name}</span>
+                </Stack>
+              </MenuItem>
+            ))}
+          </Select>
+          {validationErrors.gate && (
+            <Typography variant="caption" color="error" sx={{ ml: 1.5 }}>
+              {validationErrors.gate}
+            </Typography>
+          )}
+        </FormControl>
+
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <TextField
+            type="date"
+            label="Visit Date"
+            name="date"
+            value={form.date}
+            onChange={onChange}
+            error={!!validationErrors.date}
+            helperText={validationErrors.date}
+            InputLabelProps={{ shrink: true }}
+            fullWidth
           />
 
-          <select
-            name="building"
-            value={formData.building}
-            onChange={handleChange}
-            className="input-style"
-            required
-          >
-            <option value="">Select Building</option>
-            {buildings.map((b) => (
-              <option key={b._id} value={b._id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+          <TextField
+            type="time"
+            label="Visit Time"
+            name="time"
+            value={form.time}
+            onChange={onChange}
+            error={!!validationErrors.time}
+            helperText={validationErrors.time}
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+          />
+        </Stack>
 
-          <select
-            name="department"
-            value={formData.department}
-            onChange={handleChange}
-            className="input-style"
-            required
+        <FormControl fullWidth>
+          <InputLabel>Expected Duration</InputLabel>
+          <Select
+            name="expectedDuration"
+            value={form.expectedDuration}
+            onChange={onChange}
+            label="Expected Duration"
           >
-            <option value="">Select Department</option>
-            {departments.map((d) => (
-              <option key={d}>{d}</option>
-            ))}
-          </select>
+            <MenuItem value={30}>30 minutes</MenuItem>
+            <MenuItem value={60}>1 hour</MenuItem>
+            <MenuItem value={120}>2 hours</MenuItem>
+            <MenuItem value={180}>3 hours</MenuItem>
+            <MenuItem value={240}>4 hours</MenuItem>
+            <MenuItem value={480}>Full day (8 hours)</MenuItem>
+          </Select>
+        </FormControl>
 
-          <select
-            name="employee"
-            value={formData.employee}
-            onChange={(e) => {
-              const emp = employees.find((x) => x.name === e.target.value);
-              setSelectedEmployeePhone(emp?.phone || "");
-              handleChange(e);
-            }}
-            className="input-style"
-            required
-          >
-            <option value="">Whom to Meet</option>
-            {filteredEmployees.map((e) => (
-              <option key={e.name}>{e.name}</option>
-            ))}
-          </select>
+        {form.date && form.time && (
+          <Box sx={{ p: 2, borderRadius: 2, bgcolor: "#f0f9ff" }}>
+            <Typography fontSize={13} color="text.secondary">
+              Visit Schedule
+            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Chip
+                size="small"
+                label={`Entry: ${new Date(
+                  `${form.date}T${form.time}`
+                ).toLocaleString()}`}
+              />
+              <Typography>→</Typography>
+              <Chip size="small" color="success" label={`Valid until: ${getAllowedUntil()}`} />
+            </Stack>
+          </Box>
+        )}
 
-          <div className="md:col-span-2">
-            <button
-              disabled={submitting}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-medium hover:opacity-90 transition"
-            >
-              {submitting ? "Submitting..." : "Register Visitor"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <Button
+          type="submit"
+          variant="contained"
+          size="large"
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+        >
+          {loading ? "Registering..." : "Register Visitor"}
+        </Button>
+      </Stack>
+    </Box>
   );
-};
-
-export default VisitorRegistrationForm;
+}
