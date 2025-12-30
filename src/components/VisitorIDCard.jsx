@@ -57,10 +57,10 @@ const VisitorIDCard = ({ name, email, phone, visitorId }) => {
       {/* ID Card */}
       <div
         ref={printRef}
-        className="relative bg-white text-black w-[360px] h-[220px] rounded-2xl shadow-lg border border-gray-200 overflow-hidden font-poppins card"
+        className="relative bg-white text-black w-90 h-55 rounded-2xl shadow-lg border border-gray-200 overflow-hidden font-poppins card"
       >
         {/* Header */}
-        <div className="flex justify-between items-center bg-gradient-to-r from-indigo-800 to-blue-700 p-4 text-white">
+        <div className="flex justify-between items-center bg-linear-to-r from-indigo-800 to-blue-700 p-4 text-white">
           <div className="text-xl font-bold tracking-wide text-yellow-300">PSG VPass</div>
           <div className="w-14 h-14 rounded-full border-2 border-white overflow-hidden bg-white flex items-center justify-center">
             {photo ? (
@@ -71,7 +71,7 @@ const VisitorIDCard = ({ name, email, phone, visitorId }) => {
           </div>
         </div>
         {/* Decorative divider */}
-        <div className="w-full h-[5px] bg-gradient-to-r from-blue-700 via-cyan-500 to-blue-700" />
+        <div className="w-full h-1.25 bg-linear-to-r from-blue-700 via-cyan-500 to-blue-700" />
 
         {/* Body */}
         <div className="p-4 grid grid-cols-2 gap-y-3 text-sm">
@@ -147,6 +147,3 @@ const VisitorIDCard = ({ name, email, phone, visitorId }) => {
 };
 
 export default VisitorIDCard;
-
-
-

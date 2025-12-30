@@ -47,14 +47,14 @@ const VisitorAppointment = () => {
 
       {/* 🔵 Hero Banner */}
       <section
-        className="relative h-[300px] bg-cover bg-center"
+        className="relative h-75 bg-cover bg-center"
         style={{ backgroundImage: `url(${bannerImage})` }}
       >
         <div className="absolute inset-0 bg-black/60 flex flex-col justify-center items-center px-6 text-center text-white">
           <h1 className="text-4xl md:text-5xl font-extrabold mb-3 tracking-wide">
             Schedule Your Visit
           </h1>
-          <p className="text-lg max-w-2xl leading-relaxed">
+          <p className="text-lg max-w-2xl leading-relaxed">                                   
             Fill in your details below to book your appointment. Our team will
             review your request and update you soon.
           </p>
