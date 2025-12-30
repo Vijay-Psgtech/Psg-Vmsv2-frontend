@@ -10,25 +10,25 @@ import React, {
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 
-const SocketContext = createContext(undefined);
+const SocketContext = createContext(null);
 
 const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 
 export default function SocketProvider({ children }) {
   const { token, user } = useAuth();
+
   const socketRef = useRef(null);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
+    // ⛔ no auth → no socket
     if (!token || !user) return;
 
-    // ⛔ block security until gateId exists
-    if (user.role === "security" && !user.gateId) {
-      return; // ❌ no console spam
-    }
+    // ⛔ security must have gateId
+    if (user.role === "security" && !user.gateId) return;
 
-    // cleanup old socket
+    // cleanup existing socket
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
@@ -47,7 +47,7 @@ export default function SocketProvider({ children }) {
 
     socket.on("connect", () => {
       setConnected(true);
-      console.log("✅ Socket connected");
+      console.log("✅ Socket connected:", socket.id);
     });
 
     socket.on("disconnect", () => {
@@ -55,15 +55,20 @@ export default function SocketProvider({ children }) {
       console.warn("⚠️ Socket disconnected");
     });
 
-    socket.on("connect_error", err => {
-      console.error("❌ Socket error:", err.message);
+    socket.on("connect_error", (err) => {
+      console.error("❌ Socket connection error:", err.message);
     });
 
     return () => {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [token, user?.role, user?.gateId]); // 🔥 gateId change triggers reconnect
+  }, [
+    token,
+    user,        // ✅ ESLint satisfied
+    user?.role,
+    user?.gateId,
+  ]);
 
   return (
     <SocketContext.Provider
@@ -84,6 +89,5 @@ export const useSocket = () => {
   }
   return ctx;
 };
-
 
 

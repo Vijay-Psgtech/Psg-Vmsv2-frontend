@@ -1,14 +1,33 @@
-export default function VisitorTimeline({ history }) {
+"use client";
+
+import React from "react";
+import {
+  Box,
+  Paper,
+  Typography,
+  Stack,
+  Chip,
+} from "@mui/material";
+
+export default function VisitorTimeline({ visitor }) {
+  if (!visitor) return null;
+
   return (
-    <div className="border-l pl-4 space-y-2">
-      {history.map((h, i) => (
-        <div key={i}>
-          <p className="font-semibold">{h.action}</p>
-          <p className="text-xs text-gray-500">
-            {new Date(h.at || Date.now()).toLocaleString()}
-          </p>
-        </div>
-      ))}
-    </div>
+    <Paper sx={{ p: 3, borderRadius: 3 }}>
+      <Typography variant="h6" mb={2}>
+        Visitor Timeline – {visitor.name}
+      </Typography>
+
+      <Stack spacing={1}>
+        {visitor.history.map((h, i) => (
+          <Stack key={i} direction="row" spacing={2}>
+            <Chip label={h.action} color="info" />
+            <Typography variant="body2">
+              {new Date(h.at || visitor.updatedAt).toLocaleString()}
+            </Typography>
+          </Stack>
+        ))}
+      </Stack>
+    </Paper>
   );
 }

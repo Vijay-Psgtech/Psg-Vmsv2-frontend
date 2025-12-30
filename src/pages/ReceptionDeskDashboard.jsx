@@ -25,9 +25,6 @@ import PeopleIcon from "@mui/icons-material/People";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PendingIcon from "@mui/icons-material/Pending";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import DoorFrontIcon from "@mui/icons-material/DoorFront";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CloseIcon from "@mui/icons-material/Close";
 import WarningIcon from "@mui/icons-material/Warning";
 
@@ -160,28 +157,17 @@ export default function ReceptionDeskDashboard() {
       {/* STATS */}
       <Grid container spacing={2} mb={4}>
         {[
-          { label: "Total Registered", value: stats.total, icon: PeopleIcon },
-          { label: "Pending Approval", value: stats.pending, icon: AccessTimeIcon },
-          { label: "Approved", value: stats.approved, icon: CheckCircleIcon },
-          { label: "Currently Inside", value: stats.inside, icon: DoorFrontIcon },
-          { label: "Completed", value: stats.completed, icon: DoneAllIcon },
-        ].map(({ label, value, icon }) => (
+          { label: "Total Registered", value: stats.total },
+          { label: "Pending Approval", value: stats.pending },
+          { label: "Approved", value: stats.approved },
+          { label: "Currently Inside", value: stats.inside },
+          { label: "Completed", value: stats.completed },
+        ].map(({ label, value }) => (
           <Grid key={label} size={{ xs: 12, sm: 6, md: 2.4 }}>
             <Card>
               <CardContent>
-                <Stack direction="row" alignItems="center" spacing={2}>
-                  <Avatar sx={{ bgcolor: "#3b82f6" }}>
-                    {React.createElement(icon)}
-                  </Avatar>
-                  <Box>
-                    <Typography fontSize={14} color="text.secondary">
-                      {label}
-                    </Typography>
-                    <Typography variant="h6" fontWeight={700}>
-                      {value}
-                    </Typography>
-                  </Box>
-                </Stack>  
+                <Typography fontSize={13}>{label}</Typography>
+                <Typography variant="h4">{value}</Typography>
               </CardContent>
             </Card>
           </Grid>
