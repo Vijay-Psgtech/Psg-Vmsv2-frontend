@@ -318,40 +318,18 @@ export default function VisitorRegistrationForm({ onSuccess }) {
 
         {form.date && form.time && (
           <Box sx={{ p: 2, borderRadius: 2, bgcolor: "#f0f9ff" }}>
-            <Typography fontSize={{ xs: 12, sm: 13 }} color="text.secondary" mb={1}>
+            <Typography fontSize={13} color="text.secondary">
               Visit Schedule
             </Typography>
-
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={1}
-              alignItems="center"
-              sx={{ flexWrap: "wrap", gap: 1 }}
-            >
+            <Stack direction="row" spacing={1} alignItems="center">
               <Chip
                 size="small"
-                label={`Entry: ${new Date(`${form.date}T${form.time}`).toLocaleString()}`}
-                sx={{
-                  maxWidth: { xs: "100%", sm: 240 },
-                  textOverflow: "ellipsis",
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                }}
+                label={`Entry: ${new Date(
+                  `${form.date}T${form.time}`
+                ).toLocaleString()}`}
               />
-
-              <Typography sx={{ display: { xs: "none", sm: "block" } }}>→</Typography>
-
-              <Chip
-                size="small"
-                color="success"
-                label={`Valid until: ${getAllowedUntil()}`}
-                sx={{
-                  maxWidth: { xs: "100%", sm: 240 },
-                  textOverflow: "ellipsis",
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                }}
-              />
+              <Typography>→</Typography>
+              <Chip size="small" color="success" label={`Valid until: ${getAllowedUntil()}`} />
             </Stack>
           </Box>
         )}

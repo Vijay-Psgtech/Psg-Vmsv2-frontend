@@ -1,16 +1,18 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
+import { encryptQR } from "../utils/qrCrypto";
 
-export default function QRCodeDisplay({ visitorId }) {
-  if (!visitorId) return null;
+export default function QRCodeDisplay({ visitorId, gateId }) {
+  const [qr, setQr] = useState("");
 
-  return (
-    <div className="flex flex-col items-center">
-      <QRCodeCanvas value={visitorId} size={180} />
+  useEffect(() => {
+    if (visitorId && gateId) {
+      const encrypted = encryptQR({ visitorId, gateId });
+      setQr(encrypted);
+    }
+  }, [visitorId, gateId]);
 
-      <p className="text-xs text-gray-600 mt-2">
-        Visitor ID: {visitorId}
-      </p>
-    </div>
-  );
+  if (!qr) return null;
+
+  return <QRCodeCanvas value={qr} size={180} />;
 }
