@@ -1,7 +1,10 @@
 import QRCode from "qrcode";
+import { encryptQR } from "../utils/qrCrypto";
 
 export async function generateQR(payload) {
-  return QRCode.toDataURL(JSON.stringify(payload), {
+  const encrypted = encryptQR(payload);
+
+  return QRCode.toDataURL(encrypted, {
     errorCorrectionLevel: "H",
     margin: 2,
     width: 280,
