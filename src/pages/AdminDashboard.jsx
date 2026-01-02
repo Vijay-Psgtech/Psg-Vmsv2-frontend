@@ -997,7 +997,7 @@ export default function AdminDashboard() {
           ["Approved", stats.approved, "#10b981"],
           ["Inside", stats.inside, "#3b82f6"],
           ["Overstay", stats.overstay, "#ef4444"],
-          ["Completed", stats.completed, "#06b6d4"],
+          ["Completed", stats.completed + stats.rejected, "#06b6d4"],
         ].map(([label, value, color]) => (
           <Grid item xs={12} sm={6} md={2} key={label}>
             <Paper
