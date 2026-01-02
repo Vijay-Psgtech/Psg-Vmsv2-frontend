@@ -95,7 +95,7 @@ export default function ReceptionDeskDashboard() {
       pending: visitors.filter((v) => v.status === "PENDING").length,
       approved: visitors.filter((v) => v.status === "APPROVED").length,
       inside: visitors.filter((v) => v.status === "IN").length,
-      completed: visitors.filter((v) => v.status === "OUT").length,
+      completed: visitors.filter((v) => v.status === "OUT").length + visitors.filter((v) => v.status === "REJECTED").length,
     };
   }, [visitors]);
 

@@ -34,6 +34,7 @@ export default function VisitorRegistrationForm({ onSuccess }) {
     company: "",
     purpose: "",
     host: "",
+    hostEmail: "",
     gate: "",
     date: "",
     time: "",
@@ -77,12 +78,24 @@ export default function VisitorRegistrationForm({ onSuccess }) {
 
   /* ================= HANDLE CHANGE ================= */
   const onChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+      const { name, value } = e.target;
+      setForm((prev) => {
+        const updated = { ...prev, [name]: value };
 
-    if (validationErrors[name]) {
-      setValidationErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+        if(name === "host"){
+          const selectedEmployee = employees.find((emp) => emp.name === value);
+          if(selectedEmployee){
+            updated.hostEmail = selectedEmployee.email;
+          } else {
+            updated.hostEmail = "";
+          }
+        }
+
+        if (validationErrors[name]) {
+          setValidationErrors((prev) => ({ ...prev, [name]: "" }));
+        }
+        return updated;
+      });
   };
 
   /* ================= VALIDATE FORM ================= */
@@ -107,6 +120,8 @@ export default function VisitorRegistrationForm({ onSuccess }) {
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
+  const selectedHost = employees.find((emp) => emp.name === form.host);
 
   /* ================= SUBMIT ================= */
   const submit = async (e) => {
@@ -248,6 +263,13 @@ export default function VisitorRegistrationForm({ onSuccess }) {
             <Typography variant="caption" color="error" sx={{ ml: 1.5 }}>
               {validationErrors.host}
             </Typography>
+          )}
+          {form.host && selectedHost && (
+            <div className="mt-3 p-3 bg-black-500/10 border border-violet-500/30 rounded-xl">
+              <p className="text-sm text-black-300">
+                📧 Approval request → {selectedHost.email}
+              </p>
+            </div>
           )}
         </FormControl>
 
