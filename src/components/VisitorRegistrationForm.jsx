@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 
 import PersonIcon from "@mui/icons-material/Person";
+import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import BusinessIcon from "@mui/icons-material/Business";
 import DoorFrontIcon from "@mui/icons-material/DoorFront";
@@ -30,6 +31,7 @@ import api from "../utils/api";
 export default function VisitorRegistrationForm({ onSuccess }) {
   const [form, setForm] = useState({
     name: "",
+    email: "",
     phone: "",
     company: "",
     purpose: "",
@@ -103,6 +105,7 @@ export default function VisitorRegistrationForm({ onSuccess }) {
     const errors = {};
 
     if (!form.name.trim()) errors.name = "Name is required";
+    if (!form.email.trim()) errors.email = "Email is required";
     if (!form.phone.trim()) errors.phone = "Phone is required";
     else if (!/^\d{10}$/.test(form.phone))
       errors.phone = "Phone must be 10 digits";
@@ -147,10 +150,12 @@ export default function VisitorRegistrationForm({ onSuccess }) {
       const now = new Date();
       setForm({
         name: "",
+        email: "",
         phone: "",
         company: "",
         purpose: "",
         host: "",
+        hostEmail: "",
         gate: "",
         date: now.toISOString().split("T")[0],
         time: now.toTimeString().slice(0, 5),
@@ -198,6 +203,25 @@ export default function VisitorRegistrationForm({ onSuccess }) {
             startAdornment: (
               <InputAdornment position="start">
                 <PersonIcon />
+              </InputAdornment>
+            ),
+          }}
+          required
+          fullWidth
+        />
+
+        <TextField 
+          label="Email Address"
+          name="email"
+          type="email"
+          value={form.email}
+          onChange={onChange}
+          error={!!validationErrors.email}
+          helperText={validationErrors.email}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <EmailIcon />
               </InputAdornment>
             ),
           }}
