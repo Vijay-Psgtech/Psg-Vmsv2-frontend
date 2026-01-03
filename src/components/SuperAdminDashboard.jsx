@@ -237,7 +237,7 @@ export default function SuperAdminDashboard() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/admin/users", {
+      const res = await fetch("http://localhost:5000/api/admin/userSave", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
