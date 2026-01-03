@@ -237,7 +237,7 @@ export default function SuperAdminDashboard() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/admin/users", {
+      const res = await fetch("http://localhost:5000/api/admin/userSave", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -281,7 +281,7 @@ export default function SuperAdminDashboard() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/admin/users/${editUserDialog._id}`, {
+      const res = await fetch(`http://localhost:5000/api/admin/userUpdate/${editUserDialog._id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -315,7 +315,7 @@ export default function SuperAdminDashboard() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/admin/users/${deleteUserDialog._id}`, {
+      const res = await fetch(`http://localhost:5000/api/admin/userDelete/${deleteUserDialog._id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -340,7 +340,7 @@ export default function SuperAdminDashboard() {
   const handleToggleUserStatus = async (userId, currentStatus) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/admin/users/${userId}/toggle-status`, {
+      const res = await fetch(`http://localhost:5000/api/admin/userStatus/${userId}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
