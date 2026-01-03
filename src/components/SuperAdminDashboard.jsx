@@ -173,28 +173,7 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  const loadDepartments = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/admin/departments", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setDepartments(data);
-      }
-    } catch (err) {
-      // Use default departments if API fails
-      setDepartments([
-        { _id: "1", name: "Engineering", code: "ENG" },
-        { _id: "2", name: "Human Resources", code: "HR" },
-        { _id: "3", name: "Sales", code: "SALES" },
-        { _id: "4", name: "Marketing", code: "MKT" },
-        { _id: "5", name: "Operations", code: "OPS" },
-        { _id: "6", name: "Finance", code: "FIN" },
-      ]);
-    }
-  };
+  
 
   const loadGates = async () => {
     try {
@@ -356,6 +335,65 @@ export default function SuperAdminDashboard() {
       console.error("Failed to toggle user status", err);
     }
   };
+
+  /* Department Management */
+
+  const loadDepartments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/admin/departments", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDepartments(data);
+      }
+    } catch (err) {
+      // Use default departments if API fails
+      setDepartments([
+        { _id: "1", name: "Engineering", code: "ENG" },
+        { _id: "2", name: "Human Resources", code: "HR" },
+        { _id: "3", name: "Sales", code: "SALES" },
+        { _id: "4", name: "Marketing", code: "MKT" },
+        { _id: "5", name: "Operations", code: "OPS" },
+        { _id: "6", name: "Finance", code: "FIN" },
+      ]);
+    }
+  };
+  
+  const handleAddDepartment = async () => {
+    if (!newDepartment.name || !newDepartment.code) {
+      setError("Please fill all required fields for department");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/admin/departmentSave", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newDepartment),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to add department");
+      }
+      setSuccess("Department added successfully!");
+      setAddDepartmentDialog(false);
+      setNewDepartment({ name: "", code: "", description: "" });
+      loadDepartments();
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const logout = () => {
     localStorage.clear();
@@ -1338,6 +1376,42 @@ export default function SuperAdminDashboard() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setViewUserDialog(null)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Department Dialog */}
+      <Dialog open={addDepartmentDialog} onClose={() => setAddDepartmentDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add New Department</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Department Name"
+              value={newDepartment.name}
+
+              onChange={(e) => setNewDepartment({ ...newDepartment, name: e.target.value })}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Department Code"
+              value={newDepartment.code}
+              onChange={(e) => setNewDepartment({ ...newDepartment, code: e.target.value })}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Description"
+              value={newDepartment.description}
+              onChange={(e) => setNewDepartment({ ...newDepartment, description: e.target.value })}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddDepartmentDialog(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleAddDepartment} disabled={loading}>
+            {loading ? "Adding..." : "Add Department"}
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
