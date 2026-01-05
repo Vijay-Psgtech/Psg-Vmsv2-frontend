@@ -199,7 +199,7 @@ export default function SuperAdminDashboard() {
   const loadGates = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/buildings", {
+      const res = await fetch("http://localhost:5000/api/admin/gates", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -396,7 +396,7 @@ export default function SuperAdminDashboard() {
 
   /* Gate Management API Calls */
   const handleAddGate = async () => {
-    if (!newGate.id || !newGate.name || !newGate.code) {
+    if (!newGate.name || !newGate.code) {
       setError("Please fill all required fields for gate");
       return;
     }
@@ -1089,10 +1089,9 @@ export default function SuperAdminDashboard() {
                     <Typography variant="h6" fontWeight={600}>
                       {gate.name}
                     </Typography>
-                    <Chip label={gate._id} size="small" sx={{ mt: 1 }} />
-                    {gate.location && (
+                    {gate.code && (
                       <Typography fontSize={13} color="text.secondary" mt={2}>
-                        📍 {gate.location}
+                        📍 {gate.code}
                       </Typography>
                     )}
                     <Typography fontSize={12} color="text.secondary" mt={2}>
@@ -1196,7 +1195,7 @@ export default function SuperAdminDashboard() {
                 >
                   {gates.map((g) => (
                     <MenuItem key={g._id} value={g._id}>
-                      {g.name}
+                      {g.name} - {g.code}
                     </MenuItem>
                   ))}
                 </Select>
