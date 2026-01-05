@@ -42,7 +42,7 @@ export default function VisitorBookingWebsite() {
   });
 
   const [employees] = useState([
-    { id: "1", name: "John Smith", email: "john@company.com", department: "Engineering" },
+    { id: "1", name: "John Smith", email: "rvk.its@psgtech.ac.in", department: "Engineering" },
     { id: "2", name: "Sarah Johnson", email: "sarah@company.com", department: "HR" },
     { id: "3", name: "Michael Brown", email: "michael@company.com", department: "Sales" },
     { id: "4", name: "Emily Davis", email: "emily@company.com", department: "Marketing" },
