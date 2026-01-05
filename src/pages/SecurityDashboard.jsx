@@ -205,7 +205,7 @@ export default function SecurityDashboard() {
       } else if (tabValue === 1) {
         matchTab = ["IN", "OVERSTAY"].includes(v.status);
       } else if (tabValue === 2) {
-        matchTab = !["OUT", "EXPIRED", "REJECTED"].includes(v.status);
+        matchTab = ["OUT"].includes(v.status);
       }
 
       return matchSearch && matchTab;
@@ -225,9 +225,10 @@ export default function SecurityDashboard() {
     return {
       approved: myVisitors.filter((v) => ["PENDING", "APPROVED"].includes(v.status)).length,
       inside: myVisitors.filter((v) => v.status === "IN").length,
+      completed: myVisitors.filter((v) => v.status === "OUT").length,
       overstay: myVisitors.filter((v) => v.status === "OVERSTAY").length,
       total: myVisitors.filter((v) =>
-        ["PENDING", "APPROVED", "IN", "OVERSTAY"].includes(v.status)
+        ["PENDING", "APPROVED", "IN", "OUT", "OVERSTAY"].includes(v.status)
       ).length,
     };
   }, [visitors, user]);
@@ -285,6 +286,7 @@ export default function SecurityDashboard() {
           ["Total Active", stats.total, "#3b82f6"],
           ["Waiting Check-in", stats.approved, "#10b981"],
           ["Currently Inside", stats.inside, "#f59e0b"],
+          ["Completed", stats.completed, "#6b7280"],
           ["Overstay Alert", stats.overstay, "#ef4444"],
         ].map(([label, value, color]) => (
           <Grid item xs={12} sm={6} md={3} key={label}>
@@ -311,7 +313,7 @@ export default function SecurityDashboard() {
         <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)}>
           <Tab label={`Waiting Check-in (${stats.approved})`} />
           <Tab label={`Inside (${stats.inside + stats.overstay})`} />
-          <Tab label="All Active" />
+          <Tab label={`Completed (${stats.completed})`} />
         </Tabs>
       </Paper>
 
