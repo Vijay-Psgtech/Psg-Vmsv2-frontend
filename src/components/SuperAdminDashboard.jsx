@@ -96,7 +96,7 @@ export default function SuperAdminDashboard() {
   const [newGate, setNewGate] = useState({
     id: "",
     name: "",
-    location: "",
+    code: "",
   });
   
   const [loading, setLoading] = useState(false);
@@ -173,7 +173,28 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  
+  const loadDepartments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/admin/departments", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDepartments(data);
+      }
+    } catch (err) {
+      // Use default departments if API fails
+      setDepartments([
+        { _id: "1", name: "Engineering", code: "ENG" },
+        { _id: "2", name: "Human Resources", code: "HR" },
+        { _id: "3", name: "Sales", code: "SALES" },
+        { _id: "4", name: "Marketing", code: "MKT" },
+        { _id: "5", name: "Operations", code: "OPS" },
+        { _id: "6", name: "Finance", code: "FIN" },
+      ]);
+    }
+  };
 
   const loadGates = async () => {
     try {
@@ -194,6 +215,8 @@ export default function SuperAdminDashboard() {
       ]);
     }
   };
+
+  /* User Management API Calls */
 
   const handleAddUser = async () => {
     if (!newUser.name || !newUser.email || !newUser.password) {
@@ -336,31 +359,8 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  /* Department Management */
-
-  const loadDepartments = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/admin/departments", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setDepartments(data);
-      }
-    } catch (err) {
-      // Use default departments if API fails
-      setDepartments([
-        { _id: "1", name: "Engineering", code: "ENG" },
-        { _id: "2", name: "Human Resources", code: "HR" },
-        { _id: "3", name: "Sales", code: "SALES" },
-        { _id: "4", name: "Marketing", code: "MKT" },
-        { _id: "5", name: "Operations", code: "OPS" },
-        { _id: "6", name: "Finance", code: "FIN" },
-      ]);
-    }
-  };
-  
+  /* Department Management API Calls */
+ 
   const handleAddDepartment = async () => {
     if (!newDepartment.name || !newDepartment.code) {
       setError("Please fill all required fields for department");
@@ -394,7 +394,42 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  /* Gate Management API Calls */
+  const handleAddGate = async () => {
+    if (!newGate.id || !newGate.name || !newGate.code) {
+      setError("Please fill all required fields for gate");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/admin/gateSave", { 
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newGate),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to add gate");
+      }
+      setSuccess("Gate added successfully!");
+      setAddGateDialog(false);
+      setNewGate({ id: "", name: "", code: "" });
+      loadGates();
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+
+  // Logout
   const logout = () => {
     localStorage.clear();
     window.location.href = "/login";
@@ -1411,6 +1446,35 @@ export default function SuperAdminDashboard() {
           <Button onClick={() => setAddDepartmentDialog(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleAddDepartment} disabled={loading}>
             {loading ? "Adding..." : "Add Department"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Add Gate Dialog */}
+      <Dialog open={addGateDialog} onClose={() => setAddGateDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add New Gate</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Gate Name"
+              value={newGate.name}
+
+              onChange={(e) => setNewGate({ ...newGate, name: e.target.value })}
+              required
+            />
+            <TextField
+              fullWidth
+              label="code"
+              value={newGate.code}
+              onChange={(e) => setNewGate({ ...newGate, code: e.target.value })}
+              required
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddGateDialog(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleAddGate} disabled={loading}>
+            {loading ? "Adding..." : "Add Gate"}
           </Button>
         </DialogActions>
       </Dialog>
