@@ -48,12 +48,7 @@ export default function VisitorBookingWebsite() {
     { id: "4", name: "Emily Davis", email: "emily@company.com", department: "Marketing" },
   ]);
 
-  const [gates] = useState([
-    { id: "GATE-1", name: "Main Gate - Building A" },
-    { id: "GATE-2", name: "East Gate - Building B" },
-    { id: "GATE-3", name: "West Gate - Building C" },
-  ]);
-
+  const [gates, setGates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
@@ -62,6 +57,25 @@ export default function VisitorBookingWebsite() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const steps = ["Personal Info", "Visit Details", "Confirmation"];
+
+  useEffect(() => {
+    const fetchGates = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/gates");
+        const data = await res.json();
+         console.log(res.ok);
+        if (res.ok) {
+          setGates(data || []);
+         
+        } else {
+          console.error("Failed to fetch gates:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching gates:", err);
+      }
+    };
+    fetchGates();
+  },[]);
 
   useEffect(() => {
     const tomorrow = new Date();
@@ -637,8 +651,8 @@ export default function VisitorBookingWebsite() {
                         >
                           <option value="" className="bg-slate-800">Select Gate</option>
                           {gates.map((g) => (
-                            <option key={g.id} value={g.id} className="bg-slate-800">
-                              {g.name}
+                            <option key={g._id} value={g.code} className="bg-slate-800">
+                              {g.name} - {g.code}
                             </option>
                           ))}
                         </select>
