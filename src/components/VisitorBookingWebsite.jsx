@@ -41,13 +41,7 @@ export default function VisitorBookingWebsite() {
     vehicleNumber: "",
   });
 
-  const [employees] = useState([
-    { id: "1", name: "John Smith", email: "rvk.its@psgtech.ac.in", department: "Engineering" },
-    { id: "2", name: "Sarah Johnson", email: "sarah@company.com", department: "HR" },
-    { id: "3", name: "Michael Brown", email: "michael@company.com", department: "Sales" },
-    { id: "4", name: "Emily Davis", email: "emily@company.com", department: "Marketing" },
-  ]);
-
+  const [hosts, setHosts] = useState([]);
   const [gates, setGates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -57,25 +51,39 @@ export default function VisitorBookingWebsite() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const steps = ["Personal Info", "Visit Details", "Confirmation"];
+  const fetchGates = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/gates");
+      const data = await res.json();
+      console.log(res.ok);
+      if (res.ok) {
+        setGates(data || []);
+      } else {
+        console.error("Failed to fetch gates:", data.message);
+      }
+    } catch (err) {
+      console.error("Error fetching gates:", err);
+    }
+  };
+
+  const fetchHosts = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/hosts");
+      const data = await res.json();
+      if (res.ok) {
+        setHosts(data || []);
+      } else {
+        console.error("Failed to fetch hosts: ", data.message);
+      }
+    } catch (err) {
+      console.error("Error fetching hosts: ", err);
+    }
+  };
 
   useEffect(() => {
-    const fetchGates = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/gates");
-        const data = await res.json();
-         console.log(res.ok);
-        if (res.ok) {
-          setGates(data || []);
-         
-        } else {
-          console.error("Failed to fetch gates:", data.message);
-        }
-      } catch (err) {
-        console.error("Error fetching gates:", err);
-      }
-    };
     fetchGates();
-  },[]);
+    fetchHosts();
+  }, []);
 
   useEffect(() => {
     const tomorrow = new Date();
@@ -98,17 +106,17 @@ export default function VisitorBookingWebsite() {
     const { name, value } = e.target;
     setForm((prev) => {
       const updated = { ...prev, [name]: value };
-      
+
       if (name === "host") {
-        const selectedEmployee = employees.find((emp) => emp.name === value);
+        const selectedEmployee = hosts.find((emp) => emp.name === value);
         if (selectedEmployee) {
           updated.hostEmail = selectedEmployee.email;
         }
       }
-      
+
       return updated;
     });
-    
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -158,7 +166,7 @@ export default function VisitorBookingWebsite() {
     setError("");
   };
 
-  const selectedHost = employees.find((e) => e.name === form.host);
+  const selectedHost = hosts.find((e) => e.name === form.host);
 
   const handleSubmit = async () => {
     if (!validateStep(1)) {
@@ -171,7 +179,7 @@ export default function VisitorBookingWebsite() {
 
     try {
       const allowedUntilDate = new Date(`${form.date}T${form.time}`);
-      
+
       const payload = {
         name: form.name,
         email: form.email,
@@ -186,11 +194,14 @@ export default function VisitorBookingWebsite() {
         vehicleNumber: form.vehicleNumber || "",
       };
 
-      const res = await fetch("http://localhost:5000/api/visitor/public-create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        "http://localhost:5000/api/visitor/public-create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await res.json();
 
@@ -246,27 +257,30 @@ export default function VisitorBookingWebsite() {
     <div className="min-h-screen bg-slate-950 text-white relative overflow-hidden">
       {/* Animated Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-violet-950 via-slate-900 to-cyan-950"></div>
-      
+
       {/* Animated Mesh Gradient */}
-      <div 
+      <div
         className="fixed inset-0 opacity-30"
         style={{
-          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.15) 0%, transparent 50%)`
+          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.15) 0%, transparent 50%)`,
         }}
       ></div>
 
       {/* Grid Pattern */}
-      <div 
+      <div
         className="fixed inset-0 opacity-10"
         style={{
           backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px)`,
-          backgroundSize: '50px 50px'
+          backgroundSize: "50px 50px",
         }}
       ></div>
 
       {/* Floating Orbs */}
       <div className="fixed top-20 left-20 w-72 h-72 bg-violet-500 rounded-full blur-3xl opacity-20 animate-pulse"></div>
-      <div className="fixed bottom-20 right-20 w-96 h-96 bg-cyan-500 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+      <div
+        className="fixed bottom-20 right-20 w-96 h-96 bg-cyan-500 rounded-full blur-3xl opacity-20 animate-pulse"
+        style={{ animationDelay: "1s" }}
+      ></div>
 
       <div className="relative z-10">
         {/* Glassmorphic Navbar */}
@@ -301,7 +315,9 @@ export default function VisitorBookingWebsite() {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-sm">
                 <Sparkles className="w-4 h-4 text-violet-400" />
-                <span className="text-slate-300">Next-Generation Visitor Experience</span>
+                <span className="text-slate-300">
+                  Next-Generation Visitor Experience
+                </span>
               </div>
 
               {/* Main Heading */}
@@ -315,7 +331,8 @@ export default function VisitorBookingWebsite() {
               </h1>
 
               <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-                Skip the queues, schedule ahead. Our AI-powered system ensures a frictionless entry experience.
+                Skip the queues, schedule ahead. Our AI-powered system ensures a
+                frictionless entry experience.
               </p>
 
               {/* Feature Pills */}
@@ -352,32 +369,38 @@ export default function VisitorBookingWebsite() {
                   icon: MessageSquare,
                   title: "Simple Process",
                   desc: "3-step booking with real-time validation",
-                  gradient: "from-violet-500 to-purple-500"
+                  gradient: "from-violet-500 to-purple-500",
                 },
                 {
                   icon: Bell,
                   title: "Instant Notification",
                   desc: "Email & SMS alerts for you and your host",
-                  gradient: "from-cyan-500 to-blue-500"
+                  gradient: "from-cyan-500 to-blue-500",
                 },
                 {
                   icon: Shield,
                   title: "Fast-Track Entry",
                   desc: "QR code access at your selected gate",
-                  gradient: "from-pink-500 to-rose-500"
+                  gradient: "from-pink-500 to-rose-500",
                 },
               ].map((card, idx) => (
                 <div
                   key={idx}
                   className="group relative p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl hover:border-white/20 transition-all duration-500 overflow-hidden"
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}
+                  ></div>
                   <div className="relative">
-                    <div className={`inline-flex p-4 bg-gradient-to-br ${card.gradient} rounded-2xl mb-4`}>
+                    <div
+                      className={`inline-flex p-4 bg-gradient-to-br ${card.gradient} rounded-2xl mb-4`}
+                    >
                       <card.icon className="w-8 h-8" />
                     </div>
                     <h3 className="text-2xl font-bold mb-3">{card.title}</h3>
-                    <p className="text-slate-400 leading-relaxed">{card.desc}</p>
+                    <p className="text-slate-400 leading-relaxed">
+                      {card.desc}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -408,18 +431,22 @@ export default function VisitorBookingWebsite() {
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 animate-pulse opacity-50"></div>
                         )}
                       </div>
-                      <span className={`text-sm font-semibold transition-colors hidden sm:block ${
-                        idx <= activeStep ? "text-white" : "text-slate-500"
-                      }`}>
+                      <span
+                        className={`text-sm font-semibold transition-colors hidden sm:block ${
+                          idx <= activeStep ? "text-white" : "text-slate-500"
+                        }`}
+                      >
                         {step}
                       </span>
                     </div>
                     {idx < steps.length - 1 && (
-                      <div className={`h-1 flex-1 mx-4 rounded-full transition-all duration-500 ${
-                        idx < activeStep 
-                          ? "bg-gradient-to-r from-violet-500 to-cyan-500" 
-                          : "bg-white/10"
-                      }`} />
+                      <div
+                        className={`h-1 flex-1 mx-4 rounded-full transition-all duration-500 ${
+                          idx < activeStep
+                            ? "bg-gradient-to-r from-violet-500 to-cyan-500"
+                            : "bg-white/10"
+                        }`}
+                      />
                     )}
                   </div>
                 ))}
@@ -430,7 +457,10 @@ export default function VisitorBookingWebsite() {
                 <div className="mb-8 p-4 bg-red-500/10 border border-red-500/50 rounded-2xl backdrop-blur-sm flex items-start gap-3">
                   <AlertCircle className="w-6 h-6 text-red-400 shrink-0 mt-0.5" />
                   <div className="flex-1 text-red-200">{error}</div>
-                  <button onClick={() => setError("")} className="text-red-400 hover:text-red-300">
+                  <button
+                    onClick={() => setError("")}
+                    className="text-red-400 hover:text-red-300"
+                  >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -443,7 +473,9 @@ export default function VisitorBookingWebsite() {
                     <h2 className="text-4xl font-bold mb-3 bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
                       Tell us about yourself
                     </h2>
-                    <p className="text-slate-400">We need some basic information to get started</p>
+                    <p className="text-slate-400">
+                      We need some basic information to get started
+                    </p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
@@ -459,7 +491,9 @@ export default function VisitorBookingWebsite() {
                           value={form.name}
                           onChange={handleChange}
                           className={`w-full pl-12 pr-4 py-4 bg-white/5 border ${
-                            errors.name ? "border-red-500/50" : "border-white/10"
+                            errors.name
+                              ? "border-red-500/50"
+                              : "border-white/10"
                           } rounded-2xl focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all text-white placeholder-slate-500`}
                           placeholder="John Doe"
                         />
@@ -483,7 +517,9 @@ export default function VisitorBookingWebsite() {
                           value={form.email}
                           onChange={handleChange}
                           className={`w-full pl-12 pr-4 py-4 bg-white/5 border ${
-                            errors.email ? "border-red-500/50" : "border-white/10"
+                            errors.email
+                              ? "border-red-500/50"
+                              : "border-white/10"
                           } rounded-2xl focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all text-white placeholder-slate-500`}
                           placeholder="john@example.com"
                         />
@@ -493,7 +529,9 @@ export default function VisitorBookingWebsite() {
                           <AlertCircle className="w-4 h-4" /> {errors.email}
                         </p>
                       ) : (
-                        <p className="text-slate-500 text-sm mt-2">Confirmation will be sent here</p>
+                        <p className="text-slate-500 text-sm mt-2">
+                          Confirmation will be sent here
+                        </p>
                       )}
                     </div>
 
@@ -510,7 +548,9 @@ export default function VisitorBookingWebsite() {
                           onChange={handleChange}
                           maxLength={10}
                           className={`w-full pl-12 pr-4 py-4 bg-white/5 border ${
-                            errors.phone ? "border-red-500/50" : "border-white/10"
+                            errors.phone
+                              ? "border-red-500/50"
+                              : "border-white/10"
                           } rounded-2xl focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all text-white placeholder-slate-500`}
                           placeholder="9876543210"
                         />
@@ -577,7 +617,9 @@ export default function VisitorBookingWebsite() {
                     <h2 className="text-4xl font-bold mb-3 bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
                       Visit Details
                     </h2>
-                    <p className="text-slate-400">When and where are you planning to visit?</p>
+                    <p className="text-slate-400">
+                      When and where are you planning to visit?
+                    </p>
                   </div>
 
                   <div>
@@ -604,7 +646,8 @@ export default function VisitorBookingWebsite() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-semibold mb-3 text-slate-300">
-                        Person to Meet (Host) <span className="text-red-400">*</span>
+                        Person to Meet (Host){" "}
+                        <span className="text-red-400">*</span>
                       </label>
                       <select
                         name="host"
@@ -614,9 +657,15 @@ export default function VisitorBookingWebsite() {
                           errors.host ? "border-red-500/50" : "border-white/10"
                         } rounded-2xl focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all text-white`}
                       >
-                        <option value="" className="bg-slate-800">Select Host</option>
-                        {employees.map((e) => (
-                          <option key={e.id} value={e.name} className="bg-slate-800">
+                        <option value="" className="bg-slate-800">
+                          Select Host
+                        </option>
+                        {hosts.map((e) => (
+                          <option
+                            key={e.id}
+                            value={e.name}
+                            className="bg-slate-800"
+                          >
                             {e.name} — {e.department}
                           </option>
                         ))}
@@ -646,12 +695,20 @@ export default function VisitorBookingWebsite() {
                           value={form.gate}
                           onChange={handleChange}
                           className={`w-full pl-12 pr-4 py-4 bg-white/5 border ${
-                            errors.gate ? "border-red-500/50" : "border-white/10"
+                            errors.gate
+                              ? "border-red-500/50"
+                              : "border-white/10"
                           } rounded-2xl focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all text-white`}
                         >
-                          <option value="" className="bg-slate-800">Select Gate</option>
+                          <option value="" className="bg-slate-800">
+                            Select Gate
+                          </option>
                           {gates.map((g) => (
-                            <option key={g._id} value={g.code} className="bg-slate-800">
+                            <option
+                              key={g._id}
+                              value={g.code}
+                              className="bg-slate-800"
+                            >
                               {g.name} - {g.code}
                             </option>
                           ))}
@@ -677,7 +734,9 @@ export default function VisitorBookingWebsite() {
                           onChange={handleChange}
                           min={new Date().toISOString().split("T")[0]}
                           className={`w-full pl-12 pr-4 py-4 bg-white/5 border ${
-                            errors.date ? "border-red-500/50" : "border-white/10"
+                            errors.date
+                              ? "border-red-500/50"
+                              : "border-white/10"
                           } rounded-2xl focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all text-white`}
                         />
                       </div>
@@ -700,7 +759,9 @@ export default function VisitorBookingWebsite() {
                           value={form.time}
                           onChange={handleChange}
                           className={`w-full pl-12 pr-4 py-4 bg-white/5 border ${
-                            errors.time ? "border-red-500/50" : "border-white/10"
+                            errors.time
+                              ? "border-red-500/50"
+                              : "border-white/10"
                           } rounded-2xl focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all text-white`}
                         />
                       </div>
@@ -722,12 +783,24 @@ export default function VisitorBookingWebsite() {
                       onChange={handleChange}
                       className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all text-white"
                     >
-                      <option value="30" className="bg-slate-800">30 minutes</option>
-                      <option value="60" className="bg-slate-800">1 hour</option>
-                      <option value="120" className="bg-slate-800">2 hours</option>
-                      <option value="180" className="bg-slate-800">3 hours</option>
-                      <option value="240" className="bg-slate-800">4 hours</option>
-                      <option value="480" className="bg-slate-800">Full day (8 hours)</option>
+                      <option value="30" className="bg-slate-800">
+                        30 minutes
+                      </option>
+                      <option value="60" className="bg-slate-800">
+                        1 hour
+                      </option>
+                      <option value="120" className="bg-slate-800">
+                        2 hours
+                      </option>
+                      <option value="180" className="bg-slate-800">
+                        3 hours
+                      </option>
+                      <option value="240" className="bg-slate-800">
+                        4 hours
+                      </option>
+                      <option value="480" className="bg-slate-800">
+                        Full day (8 hours)
+                      </option>
                     </select>
                   </div>
 
@@ -739,14 +812,20 @@ export default function VisitorBookingWebsite() {
                       </p>
                       <div className="flex flex-wrap items-center gap-3">
                         <div className="px-4 py-2 bg-white/10 rounded-xl backdrop-blur-sm">
-                          <span className="text-sm text-slate-300">Entry: </span>
+                          <span className="text-sm text-slate-300">
+                            Entry:{" "}
+                          </span>
                           <span className="font-semibold text-white">
-                            {new Date(`${form.date}T${form.time}`).toLocaleString()}
+                            {new Date(
+                              `${form.date}T${form.time}`
+                            ).toLocaleString()}
                           </span>
                         </div>
                         <ArrowRight className="w-5 h-5 text-slate-500" />
                         <div className="px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl backdrop-blur-sm">
-                          <span className="text-sm text-green-300">Valid until: </span>
+                          <span className="text-sm text-green-300">
+                            Valid until:{" "}
+                          </span>
                           <span className="font-semibold text-green-200">
                             {getAllowedUntil()}
                           </span>
@@ -795,13 +874,14 @@ export default function VisitorBookingWebsite() {
                       </div>
                       <div className="absolute inset-0 bg-green-500 rounded-3xl blur-2xl opacity-50 animate-pulse"></div>
                     </div>
-                    
+
                     <div>
                       <h2 className="text-5xl font-black mb-4 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                         Success!
                       </h2>
                       <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-                        Your visitor request has been submitted for approval. Sit tight while we notify your host.
+                        Your visitor request has been submitted for approval.
+                        Sit tight while we notify your host.
                       </p>
                     </div>
                   </div>
@@ -815,13 +895,27 @@ export default function VisitorBookingWebsite() {
                       {[
                         { label: "Request ID", value: confirmationId },
                         { label: "Visitor Name", value: form.name },
-                        { label: "Visit Date & Time", value: new Date(`${form.date}T${form.time}`).toLocaleString() },
+                        {
+                          label: "Visit Date & Time",
+                          value: new Date(
+                            `${form.date}T${form.time}`
+                          ).toLocaleString(),
+                        },
                         { label: "Host", value: form.host },
-                        { label: "Entry Gate", value: gates.find((g) => g.id === form.gate)?.name },
-                        { label: "Status", value: "Pending Approval", badge: true },
+                        {
+                          label: "Entry Gate",
+                          value: gates.find((g) => g.id === form.gate)?.name,
+                        },
+                        {
+                          label: "Status",
+                          value: "Pending Approval",
+                          badge: true,
+                        },
                       ].map((item, idx) => (
                         <div key={idx} className="p-4 bg-white/5 rounded-2xl">
-                          <p className="text-sm text-slate-500 mb-1">{item.label}</p>
+                          <p className="text-sm text-slate-500 mb-1">
+                            {item.label}
+                          </p>
                           {item.badge ? (
                             <span className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/20 border border-orange-500/30 rounded-full text-orange-300 font-semibold">
                               <Clock className="w-4 h-4" />
@@ -881,12 +975,18 @@ export default function VisitorBookingWebsite() {
           {/* Footer */}
           <div className="text-center mt-12 space-y-4">
             <div className="flex items-center justify-center gap-6 flex-wrap">
-              <a href="mailto:visitors@company.com" className="text-slate-400 hover:text-violet-400 transition-colors flex items-center gap-2">
+              <a
+                href="mailto:visitors@company.com"
+                className="text-slate-400 hover:text-violet-400 transition-colors flex items-center gap-2"
+              >
                 <Mail className="w-4 h-4" />
                 visitors@company.com
               </a>
               <span className="text-slate-700">•</span>
-              <a href="tel:+911800XXXXXX" className="text-slate-400 hover:text-violet-400 transition-colors flex items-center gap-2">
+              <a
+                href="tel:+911800XXXXXX"
+                className="text-slate-400 hover:text-violet-400 transition-colors flex items-center gap-2"
+              >
                 <Phone className="w-4 h-4" />
                 +91-1800-XXX-XXXX
               </a>
