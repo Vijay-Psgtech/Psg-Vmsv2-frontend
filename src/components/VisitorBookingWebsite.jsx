@@ -185,18 +185,14 @@ export default function VisitorBookingWebsite() {
         vehicleNumber: form.vehicleNumber || "",
       };
 
-      const res = await fetch(
-        "http://localhost:5000/api/visitor/public-create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await api.post("/visitor/public-create", {
+        ...payload,
+        Headers: { "Content-Type": "application/json"}
+      })
 
-      const data = await res.json();
+      const data = res.data;
 
-      if (!res.ok) {
+      if (!res.data.success) {
         throw new Error(data.message || "Booking failed");
       }
 
@@ -895,7 +891,7 @@ export default function VisitorBookingWebsite() {
                         { label: "Host", value: form.host },
                         {
                           label: "Entry Gate",
-                          value: gates.find((g) => g.id === form.gate)?.name,
+                          value: gates.find((g) => g.code === form.gate)?.name,
                         },
                         {
                           label: "Status",
