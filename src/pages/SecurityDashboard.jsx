@@ -29,6 +29,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
+import api from "../utils/api";
 
 export default function SecurityDashboard() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -61,15 +62,15 @@ export default function SecurityDashboard() {
   const loadVisitors = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/visitor/visitorList", {
+      const res = await api.get("visitor/visitorList", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Failed to load visitors");
+      if (!res.data) throw new Error("Failed to load visitors");
 
-      const data = await res.json();
+      const data = res.data || [];
       console.log("Loaded visitors:", data);
-      setVisitors(data || []);
+      setVisitors(data);
       setError("");
     } catch (err) {
       console.error("Load error:", err);
@@ -80,12 +81,12 @@ export default function SecurityDashboard() {
   const loadAlerts = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/alert", {
+      const res = await api.get("/alert", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (res.ok) {
-        const data = await res.json();
+      if (res.data) {
+        const data = res.data;
         setAlerts(data || []);
       }
     } catch (err) {
@@ -96,17 +97,15 @@ export default function SecurityDashboard() {
   const checkIn = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/visitor/check-in/${id}`, {
-        method: "POST",
+      const res = await api.post(`/visitor/check-in/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
 
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message);
+      if (!res.data) {
+        throw new Error("Check-in failed");
       }
 
       await loadVisitors();
@@ -119,17 +118,15 @@ export default function SecurityDashboard() {
   const checkOut = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/visitor/check-out/${id}`, {
-        method: "POST",
+      const res = await api.post(`/visitor/check-out/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
 
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message);
+      if (!res.data) {
+        throw new Error("Check-out failed");
       }
 
       await loadVisitors();
@@ -142,8 +139,7 @@ export default function SecurityDashboard() {
   const markAlertAsRead = async (alertId) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`http://localhost:5000/api/alert/${alertId}/read`, {
-        method: "PATCH",
+      await api.patch(`/alert/${alertId}/read`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAlerts((prev) => prev.filter((a) => a._id !== alertId));
