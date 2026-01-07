@@ -24,6 +24,8 @@ import {
   MessageSquare,
 } from "lucide-react";
 
+import api from "../utils/api";
+
 export default function VisitorBookingWebsite() {
   const [activeStep, setActiveStep] = useState(0);
   const [form, setForm] = useState({
@@ -53,14 +55,8 @@ export default function VisitorBookingWebsite() {
   const steps = ["Personal Info", "Visit Details", "Confirmation"];
   const fetchGates = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/gates");
-      const data = await res.json();
-      console.log(res.ok);
-      if (res.ok) {
-        setGates(data || []);
-      } else {
-        console.error("Failed to fetch gates:", data.message);
-      }
+      const res = await api.get("/gates");
+      setGates(res.data || []);
     } catch (err) {
       console.error("Error fetching gates:", err);
     }
@@ -68,13 +64,8 @@ export default function VisitorBookingWebsite() {
 
   const fetchHosts = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/hosts");
-      const data = await res.json();
-      if (res.ok) {
-        setHosts(data || []);
-      } else {
-        console.error("Failed to fetch hosts: ", data.message);
-      }
+      const res = await api.get("/admin/hosts");
+      setHosts(res.data || []);
     } catch (err) {
       console.error("Error fetching hosts: ", err);
     }
@@ -194,18 +185,14 @@ export default function VisitorBookingWebsite() {
         vehicleNumber: form.vehicleNumber || "",
       };
 
-      const res = await fetch(
-        "http://localhost:5000/api/visitor/public-create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await api.post("/visitor/public-create", {
+        ...payload,
+        Headers: { "Content-Type": "application/json"}
+      })
 
-      const data = await res.json();
+      const data = res.data;
 
-      if (!res.ok) {
+      if (!res.data.success) {
         throw new Error(data.message || "Booking failed");
       }
 
@@ -904,7 +891,7 @@ export default function VisitorBookingWebsite() {
                         { label: "Host", value: form.host },
                         {
                           label: "Entry Gate",
-                          value: gates.find((g) => g.id === form.gate)?.name,
+                          value: gates.find((g) => g.code === form.gate)?.name,
                         },
                         {
                           label: "Status",
