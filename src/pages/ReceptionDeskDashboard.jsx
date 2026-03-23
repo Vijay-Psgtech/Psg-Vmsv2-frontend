@@ -21,12 +21,7 @@ import Grid from "@mui/material/Grid";
 
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import PeopleIcon from "@mui/icons-material/People";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import PendingIcon from "@mui/icons-material/Pending";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import CloseIcon from "@mui/icons-material/Close";
-import WarningIcon from "@mui/icons-material/Warning";
 
 import VisitorRegistrationForm from "../components/VisitorRegistrationForm";
 import VisitorList from "../components/reception/VisitorList";

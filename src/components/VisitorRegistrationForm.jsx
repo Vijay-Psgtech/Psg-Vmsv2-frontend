@@ -55,8 +55,8 @@ export default function VisitorRegistrationForm({ onSuccess }) {
     const loadData = async () => {
       try {
         const [employeesRes, gatesRes] = await Promise.all([
-          api.get("/visitor/employees"),
-          api.get("/visitor/buildings"),
+          api.get("/admin/hosts"),
+          api.get("/gates"),
         ]);
         setEmployees(employeesRes.data || []);
         setGates(gatesRes.data || []);
