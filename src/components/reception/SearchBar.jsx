@@ -1,21 +1,31 @@
 import React from "react";
 import { useReception } from "./receptionContext";
+import { TextField, InputAdornment } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 export default function SearchBar() {
   const { search, setSearch } = useReception();
 
   return (
-    <input
-      type="text"
-      placeholder="Search visitors (name / phone / host)..."
+    <TextField
+      fullWidth
+      size="small"
+      placeholder="Search by name, phone, ID, or host..."
       value={search}
       onChange={(e) => setSearch(e.target.value)}
-      style={{
-        width: "100%",
-        padding: 10,
-        marginBottom: 15,
-        borderRadius: 5,
-        border: "1px solid #ccc",
+      variant="outlined"
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon color="action" />
+          </InputAdornment>
+        ),
+      }}
+      sx={{
+        mb: 2,
+        "& .MuiOutlinedInput-root": {
+          backgroundColor: "#f9fafb",
+        },
       }}
     />
   );

@@ -2,14 +2,19 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
-import AuthProvider from "./context/AuthContext";
-import SocketProvider from "./context/SocketProvider";
+
+import { AuthProvider } from "./context/AuthContext";
+import { SocketProvider } from "./context/SocketProvider";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <AuthProvider>
-    <SocketProvider>
-      <App />
-    </SocketProvider>
-  </AuthProvider>
+  <React.StrictMode>
+    <AuthProvider>
+      <SocketProvider>
+        <App />
+      </SocketProvider>
+    </AuthProvider>
+  </React.StrictMode>
 );
+
+
 

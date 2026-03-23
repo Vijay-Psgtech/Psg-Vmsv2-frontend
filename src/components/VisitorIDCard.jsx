@@ -147,3 +147,6 @@ const VisitorIDCard = ({ name, email, phone, visitorId }) => {
 };
 
 export default VisitorIDCard;
+
+
+
