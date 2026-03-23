@@ -122,7 +122,7 @@ const GateEntryForm = () => {
           </h1>
 
           <p className="text-sm text-white/70 mb-6">
-            Please show this pass at the entry gate.
+            Please show    pass at the entry gate.
           </p>
 
           {visitorId ? (

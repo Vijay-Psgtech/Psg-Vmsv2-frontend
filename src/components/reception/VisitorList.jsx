@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useMemo } from "react";
 import {
   Table,
@@ -23,11 +21,18 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import ClearIcon from "@mui/icons-material/Clear";
+import api from "../../utils/api";
 
 export default function VisitorList({ visitors = [], onUpdate }) {
   const [search, setSearch] = useState("");
@@ -35,6 +40,8 @@ export default function VisitorList({ visitors = [], onUpdate }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [loading, setLoading] = useState(false);
+  const [selectedVisitor, setSelectedVisitor] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
 
   /* ================= FILTERING ================= */
   const filteredVisitors = useMemo(() => {
@@ -78,6 +85,36 @@ export default function VisitorList({ visitors = [], onUpdate }) {
     }
   };
 
+  /* ================= ACTIONS ================= */
+  const handleViewDetails = (visitor) => {
+    setSelectedVisitor(visitor);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedVisitor(null);
+  };
+
+  const handleStatusChange = async (visitorId, newStatus) => {
+    setLoading(true);
+    try {
+      // ⚠️ VERIFY THIS ENDPOINT WITH YOUR BACKEND!
+      await api.post(`/api/visitor/${newStatus.toLowerCase()}/${visitorId}`);
+      
+      if (onUpdate) {
+        await onUpdate();
+      }
+      
+      handleCloseModal();
+    } catch (err) {
+      console.error("Status update failed:", err);
+      alert(err.response?.data?.message || "Failed to update status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   /* ================= REFRESH ================= */
   const handleRefresh = async () => {
     setLoading(true);
@@ -95,82 +132,85 @@ export default function VisitorList({ visitors = [], onUpdate }) {
     };
   }, [visitors]);
 
+  /* ================= CLEAR FILTERS ================= */
+  const handleClearFilters = () => {
+    setSearch("");
+    setStatusFilter("ALL");
+    setPage(0);
+  };
+
   return (
     <Box>
       {/* STATS BAR */}
       <Stack
         direction="row"
         spacing={2}
-        mb={2}
+        mb={3}
         sx={{
           p: 2,
           borderRadius: 2,
           bgcolor: "#f9fafb",
           border: "1px solid #e5e7eb",
+          flexWrap: "wrap",
         }}
       >
         <Box>
-          <Typography fontSize={11} color="text.secondary">
-            Total
+          <Typography fontSize={11} color="text.secondary" fontWeight={600}>
+            TOTAL
           </Typography>
-          <Typography fontWeight={700} fontSize={20}>
+          <Typography fontWeight={700} fontSize={24} color="primary">
             {stats.total}
           </Typography>
         </Box>
         <Box>
-          <Typography fontSize={11} color="text.secondary">
-            Pending
+          <Typography fontSize={11} color="text.secondary" fontWeight={600}>
+            PENDING
           </Typography>
-          <Typography fontWeight={700} fontSize={20} color="#f59e0b">
+          <Typography fontWeight={700} fontSize={24} sx={{ color: "#f59e0b" }}>
             {stats.pending}
           </Typography>
         </Box>
         <Box>
-          <Typography fontSize={11} color="text.secondary">
-            Approved
+          <Typography fontSize={11} color="text.secondary" fontWeight={600}>
+            APPROVED
           </Typography>
-          <Typography fontWeight={700} fontSize={20} color="#10b981">
+          <Typography fontWeight={700} fontSize={24} sx={{ color: "#10b981" }}>
             {stats.approved}
           </Typography>
         </Box>
         <Box>
-          <Typography fontSize={11} color="text.secondary">
-            Inside
+          <Typography fontSize={11} color="text.secondary" fontWeight={600}>
+            INSIDE
           </Typography>
-          <Typography fontWeight={700} fontSize={20} color="#3b82f6">
+          <Typography fontWeight={700} fontSize={24} sx={{ color: "#3b82f6" }}>
             {stats.inside}
           </Typography>
         </Box>
       </Stack>
 
       {/* SEARCH & FILTER BAR */}
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={2}>
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={2} alignItems="flex-end">
         <TextField
           size="small"
-          placeholder="Search visitor by name, phone, ID..."
+          placeholder="Search by name, phone, ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ flex: 1 }}
+          sx={{ flex: 1, minWidth: 250 }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon color="action" />
+                <SearchIcon color="action" fontSize="small" />
               </InputAdornment>
             ),
           }}
         />
 
         <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status Filter</InputLabel>
+          <InputLabel>Status</InputLabel>
           <Select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            label="Status Filter"
-            startAdornment={
-              <InputAdornment position="start">
-                <FilterListIcon fontSize="small" color="action" />
-              </InputAdornment>
-            }
+            label="Status"
           >
             <MenuItem value="ALL">All Status</MenuItem>
             <MenuItem value="PENDING">Pending</MenuItem>
@@ -182,16 +222,24 @@ export default function VisitorList({ visitors = [], onUpdate }) {
           </Select>
         </FormControl>
 
-        <Tooltip title="Refresh">
+        <Tooltip title="Refresh Data">
           <IconButton onClick={handleRefresh} disabled={loading} color="primary">
             <RefreshIcon />
           </IconButton>
         </Tooltip>
+
+        {(search || statusFilter !== "ALL") && (
+          <Tooltip title="Clear Filters">
+            <IconButton onClick={handleClearFilters} color="error" size="small">
+              <ClearIcon />
+            </IconButton>
+          </Tooltip>
+        )}
       </Stack>
 
       {/* TABLE */}
-      {loading ? (
-        <Box display="flex" justifyContent="center" py={4}>
+      {loading && !paginatedVisitors.length ? (
+        <Box display="flex" justifyContent="center" py={8}>
           <CircularProgress />
         </Box>
       ) : (
@@ -200,14 +248,14 @@ export default function VisitorList({ visitors = [], onUpdate }) {
             <Table size="small">
               <TableHead sx={{ bgcolor: "#f9fafb" }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600 }}>Visitor ID</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Host</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Gate</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Registered At</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }} align="center">
+                  <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>Phone</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>Host</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>Gate</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: 12 }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 700, fontSize: 12 }} align="center">
                     Actions
                   </TableCell>
                 </TableRow>
@@ -225,16 +273,16 @@ export default function VisitorList({ visitors = [], onUpdate }) {
                       }}
                     >
                       <TableCell>
-                        <Typography fontSize={13} fontWeight={600} color="primary">
-                          {v.visitorId}
+                        <Typography fontSize={13} fontWeight={700} color="primary">
+                          {v.visitorId || v._id?.slice(-6)}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography fontSize={14} fontWeight={500}>
+                        <Typography fontSize={14} fontWeight={600}>
                           {v.name}
                         </Typography>
                         {v.company && (
-                          <Typography fontSize={12} color="text.secondary">
+                          <Typography fontSize={11} color="text.secondary">
                             {v.company}
                           </Typography>
                         )}
@@ -246,7 +294,13 @@ export default function VisitorList({ visitors = [], onUpdate }) {
                         <Typography fontSize={13}>{v.host}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Chip label={`Gate ${v.gate}`} size="small" variant="outlined" />
+                        {v.gate ? (
+                          <Chip label={`Gate ${v.gate}`} size="small" variant="outlined" />
+                        ) : (
+                          <Typography fontSize={12} color="text.secondary">
+                            -
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -254,22 +308,33 @@ export default function VisitorList({ visitors = [], onUpdate }) {
                           size="small"
                           sx={{
                             ...statusStyle,
-                            fontWeight: 600,
+                            fontWeight: 700,
                             fontSize: 11,
                           }}
                         />
                       </TableCell>
                       <TableCell>
                         <Typography fontSize={12} color="text.secondary">
-                          {new Date(v.createdAt).toLocaleDateString()}
+                          {new Date(v.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </Typography>
                         <Typography fontSize={11} color="text.secondary">
-                          {new Date(v.createdAt).toLocaleTimeString()}
+                          {new Date(v.createdAt).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Tooltip title="View Details">
-                          <IconButton size="small" color="primary">
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleViewDetails(v)}
+                          >
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -280,11 +345,11 @@ export default function VisitorList({ visitors = [], onUpdate }) {
 
                 {paginatedVisitors.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                      <Typography color="text.secondary">
+                    <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                      <Typography color="text.secondary" fontSize={14}>
                         {search || statusFilter !== "ALL"
-                          ? "No visitors found matching your filters"
-                          : "No visitors registered yet"}
+                          ? "📭 No visitors found matching your filters"
+                          : "📭 No visitors registered yet"}
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -308,6 +373,165 @@ export default function VisitorList({ visitors = [], onUpdate }) {
           />
         </>
       )}
+
+      {/* VISITOR DETAILS MODAL */}
+      <Dialog open={openModal} onClose={handleCloseModal} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: 18 }}>
+          Visitor Details
+        </DialogTitle>
+
+        {selectedVisitor && (
+          <>
+            <DialogContent dividers>
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                    VISITOR ID
+                  </Typography>
+                  <Typography>{selectedVisitor.visitorId}</Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                    NAME
+                  </Typography>
+                  <Typography>{selectedVisitor.name}</Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                    PHONE
+                  </Typography>
+                  <Typography>{selectedVisitor.phone}</Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                    PURPOSE
+                  </Typography>
+                  <Typography>{selectedVisitor.purpose}</Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                    HOST
+                  </Typography>
+                  <Typography>{selectedVisitor.host}</Typography>
+                </Box>
+
+                {selectedVisitor.company && (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                      COMPANY
+                    </Typography>
+                    <Typography>{selectedVisitor.company}</Typography>
+                  </Box>
+                )}
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                    GATE
+                  </Typography>
+                  <Typography>{selectedVisitor.gate || "Not assigned"}</Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                    CURRENT STATUS
+                  </Typography>
+                  <Chip
+                    label={selectedVisitor.status}
+                    sx={{
+                      ...getStatusColor(selectedVisitor.status),
+                      fontWeight: 700,
+                      mt: 0.5,
+                    }}
+                  />
+                </Box>
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                    CHECK-IN TIME
+                  </Typography>
+                  <Typography>
+                    {new Date(selectedVisitor.createdAt).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </Typography>
+                </Box>
+
+                {selectedVisitor.checkoutTime && (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                      CHECK-OUT TIME
+                    </Typography>
+                    <Typography>
+                      {new Date(selectedVisitor.checkoutTime).toLocaleString()}
+                    </Typography>
+                  </Box>
+                )}
+              </Stack>
+            </DialogContent>
+
+            <DialogActions sx={{ p: 2 }}>
+              {selectedVisitor.status === "PENDING" && (
+                <>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() =>
+                      handleStatusChange(selectedVisitor._id, "REJECT")
+                    }
+                    disabled={loading}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() =>
+                      handleStatusChange(selectedVisitor._id, "APPROVE")
+                    }
+                    disabled={loading}
+                  >
+                    Approve
+                  </Button>
+                </>
+              )}
+
+              {selectedVisitor.status === "APPROVED" && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleStatusChange(selectedVisitor._id, "IN")}
+                  disabled={loading}
+                >
+                  Check In
+                </Button>
+              )}
+
+              {selectedVisitor.status === "IN" && (
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleStatusChange(selectedVisitor._id, "OUT")}
+                  disabled={loading}
+                >
+                  Check Out
+                </Button>
+              )}
+
+              <Button onClick={handleCloseModal} variant="text">
+                Close
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 }

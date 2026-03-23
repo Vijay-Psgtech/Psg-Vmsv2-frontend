@@ -1,70 +1,140 @@
-// src/pages/VerifyOTP.jsx
-"use client";
-import React, { useEffect, useState } from "react";
-import api from "../utils/api";
-import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import dashboardRoutes from "../routes/dashboardRoutes";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Paper,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  CircularProgress,
+  Stack,
+} from '@mui/material';
+import { useAuth } from '@/context/AuthContext';
 
 export default function VerifyOTP() {
   const navigate = useNavigate();
-  const { loginUser, user, token } = useAuth();
+  const { verifyOTP } = useAuth();
 
-  const [otp, setOtp] = useState("");
-  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Load OTP email from localStorage
-  useEffect(() => {
-    const storedEmail = localStorage.getItem("otpEmail");
-    if (!storedEmail && (!user || !token)) {
-      navigate("/login", { replace: true });
-    } else {
-      setEmail(storedEmail);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!otp.trim()) {
+      setError('Please enter the OTP');
+      return;
     }
-  }, [navigate, user, token]);
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user && token) {
-      navigate(dashboardRoutes[user.role] || "/", { replace: true });
+    if (otp.length !== 6) {
+      setError('OTP must be 6 digits');
+      return;
     }
-  }, [user, token, navigate]);
 
-  // ---------------- VERIFY OTP ----------------
-  const handleVerify = async () => {
-  if (!otp) return alert("Enter OTP");
+    setLoading(true);
+    setError('');
 
-  try {
-    const res = await api.post("/auth/verify-otp", { email, otp });
+    try {
+      const result = await verifyOTP(otp);
 
-    loginUser(res.data);
-
-    localStorage.removeItem("otpEmail");
-
-    navigate(dashboardRoutes[res.data.user.role], { replace: true });
-  } catch (err) {
-    alert(err.response?.data?.error || "OTP verification failed");
-  }
-};
+      if (result.success) {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        setError(result.message || 'OTP verification failed');
+      }
+    } catch (verifyError) {
+      console.error('OTP verification error:', verifyError);
+      setError(verifyError.message || 'An error occurred during verification');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div style={{ width: 300, margin: "auto", marginTop: 100 }}>
-      <h2>Verify OTP</h2>
-      <p>Email: {email}</p>
-
-      <input
-        value={otp}
-        onChange={(e) => setOtp(e.target.value)}
-        placeholder="Enter OTP"
-        style={{ width: "100%", padding: 8, marginTop: 10 }}
-      />
-
-      <button
-        onClick={handleVerify}
-        style={{ width: "100%", padding: 10, marginTop: 10 }}
+    <Container maxWidth="sm">
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          flexDirection: 'column',
+        }}
       >
-        Verify
-      </button>
-    </div>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            borderRadius: 2,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            width: '100%',
+          }}
+        >
+          <Typography variant="h5" component="h1" sx={{ fontWeight: 700, mb: 2 }}>
+            Verify OTP
+          </Typography>
+
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
+            Enter the 6-digit OTP sent to your email
+          </Typography>
+
+          {error && (
+            <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={2}>
+              <TextField
+                fullWidth
+                label="OTP"
+                type="text"
+                inputProps={{
+                  maxLength: 6,
+                  pattern: '[0-9]*',
+                }}
+                value={otp}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setOtp(value);
+                  setError('');
+                }}
+                placeholder="000000"
+                disabled={loading}
+              />
+
+              <Button
+                fullWidth
+                variant="contained"
+                type="submit"
+                disabled={loading || otp.length !== 6}
+                sx={{ py: 1.5 }}
+              >
+                {loading ? <CircularProgress size={24} /> : 'Verify OTP'}
+              </Button>
+            </Stack>
+          </form>
+
+          <Typography
+            variant="body2"
+            sx={{ mt: 3, textAlign: 'center', color: 'text.secondary' }}
+          >
+            Didn't receive the OTP?{' '}
+            <Button
+              size="small"
+              onClick={() => navigate('/login', { replace: true })}
+            >
+              Go back to login
+            </Button>
+          </Typography>
+        </Paper>
+      </Box>
+    </Container>
   );
 }
+
+

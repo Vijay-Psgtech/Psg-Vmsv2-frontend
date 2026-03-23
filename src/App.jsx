@@ -1,171 +1,164 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import AuthProvider from "./context/AuthContext";
+// src/App.jsx - PRODUCTION FIXED
+import React, { Suspense } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { SocketProvider } from "./context/SocketProvider";
+import ProtectedRoute from "./hooks/ProtectedRoute";
+import { logger } from "./utils/logger";
 
-/* ================= AUTH PAGES ================= */
 import Login from "./pages/Login";
-import VerifyOTP from "./pages/VerifyOTP";
 import Register from "./pages/Register";
 
-/* ================= DASHBOARDS ================= */
-import SuperAdminDashboard from "./components/SuperAdminDashboard"; // ✅ NEW
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminOverstayDashboard from "./pages/AdminOverstayDashboard";
-import SecurityDashboard from "./pages/SecurityDashboard";
-import ReceptionDeskDashboard from "./pages/ReceptionDeskDashboard";
+// Lazy load dashboards
+const HostAdminDashboard = React.lazy(() => import("./pages/Hostadmindashboard kanban"));
+const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard"));
+const SuperAdminDashboard = React.lazy(() => import("./components/SuperAdminDashboard"));
+const SecurityDashboard = React.lazy(() => import("./pages/SecurityDashboard"));
+const VisitorBooking = React.lazy(() => import("./components/VisitorBookingWebsite"));
 
-/* ================= VISITOR COMPONENTS ================= */
-import VisitorBookingWebsite from "./components/VisitorBookingWebsite"; // ✅ PUBLIC FORM
-import VisitorRegistrationForm from "./components/VisitorRegistrationForm"; // ✅ INTERNAL FORM
+const LoadingFallback = () => (
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", flexDirection: "column", gap: "16px" }}>
+    <div style={{ width: 50, height: 50, border: "5px solid #f3f4f6", borderTop: "5px solid #8b5cf6", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+    <h2 style={{ color: "#6b7280", fontSize: 18 }}>Loading...</h2>
+    <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+  </div>
+);
 
-/* ================= ROUTE GUARDS ================= */
-import ProtectedRoute from "./hooks/ProtectedRoute";
-import RoleRoute from "./hooks/RoleRoute";
+/**
+ * Maps user role to their dashboard path
+ * FIX: security now has its own dashboard, not /admin/dashboard
+ */
+function getDashboardPath(role) {
+  const routes = {
+    superadmin: "/superadmin/dashboard",
+    admin: "/admin/dashboard",
+    hostadmin: "/hostadmin/dashboard",
+    security: "/security/dashboard",
+    reception: "/admin/dashboard",
+  };
+  return routes[role] || "/book-visit";
+}
 
-export default function App() {
+// Smart home redirect
+const HomePage = () => {
+  const navigate = useNavigate();
+  const { user, loading, isLoggedIn } = useAuth();
+
+  React.useEffect(() => {
+    if (loading) return;
+    if (isLoggedIn && user) {
+      navigate(getDashboardPath(user.role), { replace: true });
+    } else {
+      navigate("/book-visit", { replace: true });
+    }
+  }, [user, loading, isLoggedIn, navigate]);
+
+  return <LoadingFallback />;
+};
+
+// Login page — redirects if already logged in
+const LoginPage = () => {
+  const navigate = useNavigate();
+  const { user, loading, isLoggedIn } = useAuth();
+
+  React.useEffect(() => {
+    if (loading) return;
+    if (isLoggedIn && user) {
+      navigate(getDashboardPath(user.role), { replace: true });
+    }
+  }, [user, loading, isLoggedIn, navigate]);
+
+  return <Login />;
+};
+
+function AppRoutes() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          {/* ========================================
-              PUBLIC ROUTES (NO PROTECTION)
-          ======================================== */}
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/book-visit" element={<VisitorBooking />} />
+        <Route path="/visitor/book" element={<VisitorBooking />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<Register />} />
 
-          {/* Public Visitor Booking - Anyone can access */}
-          <Route path="/" element={<VisitorBookingWebsite />} />
-          <Route path="/book-visit" element={<VisitorBookingWebsite />} />
-          <Route path="/visitor/book" element={<VisitorBookingWebsite />} />
+        {/* Host admin dashboard */}
+        <Route
+          path="/hostadmin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["hostadmin"]}>
+              <HostAdminDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-          {/* Staff Authentication Pages - Public */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/verify-otp" element={<VerifyOTP />} />
+        {/* Admin dashboard */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "superadmin", "reception"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-          {/* ========================================
-              PROTECTED ROUTES (AUTHENTICATION REQUIRED)
-          ======================================== */}
+        {/* Super admin dashboard */}
+        <Route
+          path="/superadmin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["superadmin"]}>
+              <SuperAdminDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-          {/* -------- SUPER ADMIN ROUTES -------- */}
-          <Route
-            path="/superadmin"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["superadmin"]}>
-                  <SuperAdminDashboard />
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
+        {/* Security dashboard — FIX: was missing, security had no dedicated route */}
+        <Route
+          path="/security/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["security"]}>
+              <SecurityDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/superadmin/dashboard"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["superadmin"]}>
-                  <SuperAdminDashboard />
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
+        {/* Catch-all redirects */}
+        <Route path="/admin/*" element={<ProtectedRoute allowedRoles={["admin", "superadmin"]}><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/superadmin/*" element={<ProtectedRoute allowedRoles={["superadmin"]}><SuperAdminDashboard /></ProtectedRoute>} />
+        <Route path="/hostadmin/*" element={<ProtectedRoute allowedRoles={["hostadmin"]}><HostAdminDashboard /></ProtectedRoute>} />
+        <Route path="/security/*" element={<ProtectedRoute allowedRoles={["security"]}><SecurityDashboard /></ProtectedRoute>} />
 
-          {/* -------- ADMIN ROUTES -------- */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["admin", "superadmin"]}>
-                  <AdminDashboard />
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["admin", "superadmin"]}>
-                  <AdminDashboard />
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/admin/overstay"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["admin", "superadmin"]}>
-                  <AdminOverstayDashboard />
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* -------- SECURITY ROUTES -------- */}
-          <Route
-            path="/security"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["security"]}>
-                  <SecurityDashboard />
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/security/dashboard"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["security"]}>
-                  <SecurityDashboard />
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* -------- RECEPTION ROUTES -------- */}
-          <Route
-            path="/reception"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["reception"]}>
-                  <ReceptionDeskDashboard />
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/reception/dashboard"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["reception"]}>
-                  <ReceptionDeskDashboard />
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Internal Visitor Registration (Reception Only) */}
-          <Route
-            path="/visitor/register"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["reception"]}>
-                  <VisitorRegistrationForm />
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* ========================================
-              FALLBACK ROUTE
-          ======================================== */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+        {/* 404 */}
+        <Route path="*" element={
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100vh", textAlign: "center", backgroundColor: "#f9fafb", padding: "20px" }}>
+            <h1 style={{ fontSize: 72, margin: "0 0 16px 0", color: "#111827", fontWeight: 700 }}>404</h1>
+            <p style={{ fontSize: 20, color: "#6b7280", margin: "0 0 32px 0" }}>Page Not Found</p>
+            <button onClick={() => window.location.href = "/"} style={{ padding: "12px 32px", backgroundColor: "#8b5cf6", color: "white", border: "none", borderRadius: 6, fontSize: 16, fontWeight: 600, cursor: "pointer" }}>
+              Go to Home
+            </button>
+          </div>
+        } />
+      </Routes>
+    </Suspense>
   );
 }
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <SocketProvider>
+          <AppRoutes />
+        </SocketProvider>
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;

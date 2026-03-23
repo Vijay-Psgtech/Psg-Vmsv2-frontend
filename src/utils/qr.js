@@ -10,3 +10,4 @@ export async function generateQR(payload) {
     width: 280,
   });
 }
+

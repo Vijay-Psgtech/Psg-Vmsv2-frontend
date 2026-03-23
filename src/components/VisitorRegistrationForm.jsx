@@ -18,7 +18,6 @@ import {
 } from "@mui/material";
 
 import PersonIcon from "@mui/icons-material/Person";
-import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import BusinessIcon from "@mui/icons-material/Business";
 import DoorFrontIcon from "@mui/icons-material/DoorFront";
@@ -31,12 +30,10 @@ import api from "../utils/api";
 export default function VisitorRegistrationForm({ onSuccess }) {
   const [form, setForm] = useState({
     name: "",
-    email: "",
     phone: "",
     company: "",
     purpose: "",
     host: "",
-    hostEmail: "",
     gate: "",
     date: "",
     time: "",
@@ -55,8 +52,8 @@ export default function VisitorRegistrationForm({ onSuccess }) {
     const loadData = async () => {
       try {
         const [employeesRes, gatesRes] = await Promise.all([
-          api.get("/admin/hosts"),
-          api.get("/gates"),
+          api.get("/visitor/employees"),
+          api.get("/visitor/buildings"),
         ]);
         setEmployees(employeesRes.data || []);
         setGates(gatesRes.data || []);
@@ -80,24 +77,12 @@ export default function VisitorRegistrationForm({ onSuccess }) {
 
   /* ================= HANDLE CHANGE ================= */
   const onChange = (e) => {
-      const { name, value } = e.target;
-      setForm((prev) => {
-        const updated = { ...prev, [name]: value };
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
 
-        if(name === "host"){
-          const selectedEmployee = employees.find((emp) => emp.name === value);
-          if(selectedEmployee){
-            updated.hostEmail = selectedEmployee.email;
-          } else {
-            updated.hostEmail = "";
-          }
-        }
-
-        if (validationErrors[name]) {
-          setValidationErrors((prev) => ({ ...prev, [name]: "" }));
-        }
-        return updated;
-      });
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   /* ================= VALIDATE FORM ================= */
@@ -105,7 +90,6 @@ export default function VisitorRegistrationForm({ onSuccess }) {
     const errors = {};
 
     if (!form.name.trim()) errors.name = "Name is required";
-    if (!form.email.trim()) errors.email = "Email is required";
     if (!form.phone.trim()) errors.phone = "Phone is required";
     else if (!/^\d{10}$/.test(form.phone))
       errors.phone = "Phone must be 10 digits";
@@ -123,8 +107,6 @@ export default function VisitorRegistrationForm({ onSuccess }) {
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-
-  const selectedHost = employees.find((emp) => emp.name === form.host);
 
   /* ================= SUBMIT ================= */
   const submit = async (e) => {
@@ -150,12 +132,10 @@ export default function VisitorRegistrationForm({ onSuccess }) {
       const now = new Date();
       setForm({
         name: "",
-        email: "",
         phone: "",
         company: "",
         purpose: "",
         host: "",
-        hostEmail: "",
         gate: "",
         date: now.toISOString().split("T")[0],
         time: now.toTimeString().slice(0, 5),
@@ -203,25 +183,6 @@ export default function VisitorRegistrationForm({ onSuccess }) {
             startAdornment: (
               <InputAdornment position="start">
                 <PersonIcon />
-              </InputAdornment>
-            ),
-          }}
-          required
-          fullWidth
-        />
-
-        <TextField 
-          label="Email Address"
-          name="email"
-          type="email"
-          value={form.email}
-          onChange={onChange}
-          error={!!validationErrors.email}
-          helperText={validationErrors.email}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <EmailIcon />
               </InputAdornment>
             ),
           }}
@@ -287,13 +248,6 @@ export default function VisitorRegistrationForm({ onSuccess }) {
             <Typography variant="caption" color="error" sx={{ ml: 1.5 }}>
               {validationErrors.host}
             </Typography>
-          )}
-          {form.host && selectedHost && (
-            <div className="mt-3 p-3 bg-black-500/10 border border-violet-500/30 rounded-xl">
-              <p className="text-sm text-black-300">
-                📧 Approval request → {selectedHost.email}
-              </p>
-            </div>
           )}
         </FormControl>
 
@@ -393,3 +347,7 @@ export default function VisitorRegistrationForm({ onSuccess }) {
     </Box>
   );
 }
+
+
+
+

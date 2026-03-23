@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "vpass",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,8 +13,8 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@lottiefiles/react-lottie-player": "^3.6.0",
-    "@mui/icons-material": "^7.3.6",
-    "@mui/material": "^7.3.6",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
     "@mui/system": "^7.3.6",
     "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.2",
