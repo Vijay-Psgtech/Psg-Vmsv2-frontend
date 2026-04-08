@@ -10,14 +10,6 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173, // Or your preferred frontend port
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-    allowedHosts: ['localhost', 'vpasstest.psginstitutions.in']
+    allowedHosts: ['localhost', 'vmstest.psginstitutions.in']
   },
 });
