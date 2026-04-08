@@ -18,5 +18,6 @@ export default defineConfig({
         secure: false,
       },
     },
+    allowedHosts: ['localhost', 'vpasstest.psginstitutions.in']
   },
 });
