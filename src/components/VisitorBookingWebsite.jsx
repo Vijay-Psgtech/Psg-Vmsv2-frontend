@@ -597,7 +597,7 @@ export default function PSGVisitorBookingPortal() {
 
   // Wait count for slot
   useEffect(() => {
-    if (!form.date || !form.time) return;
+    if (!form.date || !form.time || !form.hostId) return;
     fetch(
       `${API}/visitor/slot-count?date=${form.date}&time=${form.time}&hostId=${form.hostId}`,
     )
