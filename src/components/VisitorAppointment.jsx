@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import bannerImage from "../assets/visitor-banner.jpg";
 
+const API = import.meta.env.VITE_API_URL ||"http://localhost:5000/api";
+
 const VisitorAppointment = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -33,7 +35,7 @@ const VisitorAppointment = () => {
       if (document) form.append("document", document);
 
       const res = await axios.post(
-        "http://localhost:5000/api/visitors/register",
+        `${API}/visitors/register`,
         form
       );
       setMessage(res.data.message || "Appointment submitted successfully!");

@@ -24,7 +24,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import bannerImage from "../assets/image_1.webp";
 
-const API = "http://localhost:5000/api";
+const API = import.meta.env.VITE_API_URL ||"http://localhost:5000/api";
 
 // ─── i18n ──────────────────────────────────────────────────────────────────
 const T = {
