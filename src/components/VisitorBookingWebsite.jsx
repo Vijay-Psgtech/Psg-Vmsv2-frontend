@@ -2679,7 +2679,7 @@ export default function PSGVisitorBookingPortal() {
                   color: "#475569",
                 }}
               >
-                © 2025 PSG Institutions. All rights reserved. | Powered by VPASS
+                © 2025 PSG Institutions. All rights reserved. | Powered by Central IT Services Team
               </div>
             </div>
           </footer>
