@@ -664,7 +664,11 @@ export default function PSGVisitorBookingPortal() {
     setLoading(true);
     try {
       const host = hosts.find((h) => h._id === form.hostId);
-      const payload = { ...form, host: host?.name || "", hostEmail: host?.email || "" };
+      const payload = {
+        ...form,
+        host: host?.name || "",
+        hostEmail: host?.email || "",
+      };
       delete payload.idFile;
       const r = await fetch(`${API}/visitor`, {
         method: "POST",
@@ -856,49 +860,251 @@ export default function PSGVisitorBookingPortal() {
       <style>{`
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 *{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+
+/* ─── Animations ─── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sDown{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sRight{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:translateX(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pingg{0%{transform:scale(1);opacity:1}75%,100%{transform:scale(2);opacity:0}}
+
 .fu{animation:fadeUp .6s ease both}
 .sd{animation:sDown .4s ease both}
 .sr{animation:sRight .35s ease both}
 .spin{animation:spin .8s linear infinite;display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%}
-.inp{width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:10px;background:var(--inp);color:var(--txt);font-size:14px;font-family:inherit;outline:none;transition:border .2s,box-shadow .2s;-webkit-appearance:none}
+
+/* ─── Form Elements ─── */
+.inp{
+  width:100%;
+  padding:clamp(8px,2vw,11px) clamp(10px,2vw,14px);
+  border:1.5px solid var(--bdr);
+  border-radius:clamp(6px,1.5vw,10px);
+  background:var(--inp);
+  color:var(--txt);
+  font-size:clamp(13px,1.5vw,14px);
+  font-family:inherit;
+  outline:none;
+  transition:border .2s,box-shadow .2s;
+  -webkit-appearance:none
+}
 .inp:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
 .inp.e{border-color:#ef4444}
-.pli{position:relative}.pli .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none;opacity:.55;font-size:16px}
-.pli .inp{padding-left:40px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 22px;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:all .25s;white-space:nowrap;min-height:44px}
+
+.pli{position:relative}
+.pli .ico{position:absolute;left:clamp(8px,2vw,13px);top:50%;transform:translateY(-50%);pointer-events:none;opacity:.55;font-size:clamp(14px,2vw,16px)}
+.pli .inp{padding-left:clamp(32px,6vw,40px)}
+
+/* ─── Buttons ─── */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(4px,1vw,7px);
+  padding:clamp(9px,2vw,11px) clamp(14px,3vw,22px);
+  border:none;
+  border-radius:clamp(8px,1.5vw,10px);
+  font-weight:700;
+  font-size:clamp(12px,1.5vw,14px);
+  cursor:pointer;
+  font-family:inherit;
+  transition:all .25s;
+  white-space:nowrap;
+  min-height:44px
+}
 .pr{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff}
 .pr:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(59,130,246,.3)}
 .pr:disabled{opacity:.55;cursor:not-allowed;transform:none!important}
 .ou{background:transparent;color:var(--txt);border:2px solid var(--bdr)}
 .ou:hover{background:var(--s2)}
-.sm{padding:8px 16px;font-size:12px;border-radius:8px;min-height:36px}
-.chip{display:inline-flex;align-items:center;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--bdr);background:var(--s2);color:var(--t2);transition:all .2s;white-space:nowrap;font-family:inherit}
+.sm{padding:clamp(6px,1vw,8px) clamp(12px,2vw,16px);font-size:clamp(11px,1.2vw,12px);border-radius:clamp(6px,1vw,8px);min-height:36px}
+
+/* ─── Chips ─── */
+.chip{
+  display:inline-flex;
+  align-items:center;
+  padding:clamp(5px,1vw,7px) clamp(10px,2vw,14px);
+  border-radius:20px;
+  font-size:clamp(11px,1.2vw,12px);
+  font-weight:600;
+  cursor:pointer;
+  border:1.5px solid var(--bdr);
+  background:var(--s2);
+  color:var(--t2);
+  transition:all .2s;
+  white-space:nowrap;
+  font-family:inherit
+}
 .chip:hover,.chip.on{background:#1e40af;color:#fff;border-color:#1e40af}
-.ho{padding:10px 14px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:13px}
+
+/* ─── Host Selection ─── */
+.ho{
+  padding:clamp(8px,1.5vw,10px) clamp(10px,2vw,14px);
+  border-radius:clamp(6px,1vw,8px);
+  cursor:pointer;
+  transition:background .15s;
+  font-size:clamp(12px,1.2vw,13px)
+}
 .ho:hover,.ho.sel{background:var(--bluebg);color:var(--blue)}
-.card{background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:24px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
-.em{color:#ef4444;font-size:12px;margin-top:4px}
-.lbl{display:block;font-size:13px;font-weight:600;color:var(--txt);margin-bottom:6px}
-.sec{padding:80px 24px}
-.wrap{max-width:1100px;margin:0 auto}
-.statbox{background:rgba(255,255,255,.12);border-radius:12px;padding:20px;text-align:center;backdrop-filter:blur(8px)}
-.howbox{background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:28px 22px;text-align:center;transition:all .3s}
+
+/* ─── Cards ─── */
+.card{
+  background:var(--card);
+  border:1px solid var(--bdr);
+  border-radius:clamp(12px,2vw,16px);
+  padding:clamp(16px,4vw,24px)
+}
+
+/* ─── Grid Layouts ─── */
+.g2{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:clamp(12px,3vw,18px)
+}
+.g3{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:clamp(12px,3vw,18px)
+}
+
+/* ─── Typography ─── */
+.em{color:#ef4444;font-size:clamp(11px,1.2vw,12px);margin-top:4px}
+.lbl{display:block;font-size:clamp(12px,1.3vw,13px);font-weight:600;color:var(--txt);margin-bottom:clamp(4px,1vw,6px)}
+
+/* ─── Sections ─── */
+.sec{padding:clamp(40px,8vw,80px) clamp(16px,4vw,24px)}
+.wrap{max-width:1100px;margin:0 auto;width:100%;padding:0 clamp(8px,2vw,24px)}
+
+/* ─── Stats ─── */
+.statbox{
+  background:rgba(255,255,255,.12);
+  border-radius:clamp(8px,2vw,12px);
+  padding:clamp(14px,3vw,20px);
+  text-align:center;
+  backdrop-filter:blur(8px)
+}
+
+/* ─── How Box ─── */
+.howbox{
+  background:var(--card);
+  border:1px solid var(--bdr);
+  border-radius:clamp(12px,2vw,16px);
+  padding:clamp(16px,3vw,28px) clamp(14px,2vw,22px);
+  text-align:center;
+  transition:all .3s
+}
 .howbox:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,.08)}
-.otp6{width:44px;height:48px;text-align:center;font-size:20px;font-weight:700;border:2px solid var(--bdr);border-radius:10px;background:var(--inp);color:var(--txt);font-family:monospace;outline:none;transition:border .2s;-webkit-appearance:none}
+
+/* ─── OTP ─── */
+.otp6{
+  width:clamp(36px,8vw,44px);
+  height:clamp(40px,8vw,48px);
+  text-align:center;
+  font-size:clamp(16px,2vw,20px);
+  font-weight:700;
+  border:2px solid var(--bdr);
+  border-radius:clamp(8px,1.5vw,10px);
+  background:var(--inp);
+  color:var(--txt);
+  font-family:monospace;
+  outline:none;
+  transition:border .2s;
+  -webkit-appearance:none
+}
 .otp6:focus{border-color:#3b82f6}
+
+/* ─── Scrollbar ─── */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
-@media(max-width:640px){
+
+/* ─── Mobile First Responsive Design ─── */
+
+/* Small devices (≤ 480px) */
+@media(max-width:480px){
+  .sec{padding:clamp(32px,6vw,40px) clamp(12px,3vw,16px)}
+  .wrap{padding:0 clamp(12px,3vw,16px)}
+  .card{padding:clamp(14px,3vw,18px)}
+  
   .g2,.g3{grid-template-columns:1fr}
-  .btn{width:100%;justify-content:center}
-  .btns{flex-direction:column;gap:8px}
+  
+  .btn{width:100%;justify-content:center;padding:clamp(10px,2vw,12px) clamp(16px,3vw,20px)}
+  .btns{flex-direction:column;gap:clamp(6px,1.5vw,8px)}
+  
+  .chip{font-size:clamp(10px,1.1vw,11px);padding:clamp(4px,0.8vw,6px) clamp(8px,1.5vw,12px)}
+  
+  h1{font-size:clamp(28px,6vw,36px)!important}
+  h2{font-size:clamp(20px,5vw,28px)!important}
+  h3{font-size:clamp(16px,4vw,21px)!important}
+  
+  .inp{font-size:clamp(12px,1.3vw,13px);padding:clamp(8px,1.5vw,10px) clamp(10px,1.5vw,12px)}
+  
+  .howbox{padding:clamp(14px,2.5vw,18px) clamp(12px,2vw,16px)}
+}
+
+/* Tablets (480px - 768px) */
+@media(min-width:481px) and (max-width:768px){
+  .sec{padding:clamp(50px,7vw,65px) clamp(20px,4vw,24px)}
+  .wrap{padding:0 clamp(16px,3vw,20px)}
+  
+  .g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  
+  .btn{padding:clamp(10px,1.8vw,11px) clamp(18px,2.8vw,22px);font-size:clamp(12px,1.3vw,13px)}
+  .btns{flex-direction:row-reverse;flex-wrap:wrap;gap:clamp(8px,1.5vw,10px)}
+  
+  h1{font-size:clamp(32px,6vw,48px)!important}
+  h2{font-size:clamp(24px,4.5vw,32px)!important}
+  h3{font-size:clamp(18px,3.5vw,20px)!important}
+  
+  .inp{font-size:clamp(13px,1.4vw,14px)}
+  .otp6{width:clamp(38px,7vw,42px);height:clamp(42px,7vw,46px)}
+}
+
+/* Large devices (≥ 769px) */
+@media(min-width:769px){
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr 1fr}
+  
+  .btn:hover{transform:translateY(-2px)}
+  .ou:hover{background:var(--s2)}
+}
+
+/* Extra large (≥ 1024px) */
+@media(min-width:1024px){
+  .sec{padding:clamp(70px,8vw,100px) 24px}
+  .wrap{max-width:1200px}
+}
+
+/* Desktop optimizations */
+@media(min-width:1280px){
+  .wrap{max-width:1280px}
+  .sec{padding:80px 40px}
+}
+
+/* Landscape orientation */
+@media(orientation:landscape) and (max-height:600px){
+  .sec{padding:clamp(30px,4vh,50px) clamp(16px,3vw,24px)}
+  h1{font-size:clamp(24px,4vh,36px)!important}
+}
+
+/* Touch device optimizations */
+@media(hover:none){
+  .btn:active{transform:scale(0.98)}
+  .chip:active{background:#1e40af;color:#fff}
+  .howbox:active{transform:translateY(-3px)}
+}
+
+/* High DPI screens */
+@media(min-resolution:2dppx){
+  body{-webkit-font-smoothing:subpixel-antialiased}
+}
+
+/* Print styles */
+@media print{
+  .sec{padding:20px}
+  .btn{display:none}
+  nav{display:none}
 }
 `}</style>
 
@@ -919,43 +1125,59 @@ export default function PSGVisitorBookingPortal() {
           style={{
             maxWidth: 1100,
             margin: "0 auto",
-            padding: "0 20px",
-            height: 62,
+            padding: "0 clamp(12px,3vw,20px)",
+            minHeight: "clamp(56px,10vw,62px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 12,
+            gap: "clamp(8px,2vw,12px)",
+            flexWrap: "wrap",
           }}
         >
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 10,
+              gap: "clamp(6px,1.5vw,10px)",
               flexShrink: 0,
             }}
           >
             <div
               style={{
-                width: 42,
-                height: 42,
-                borderRadius: 11,
+                width: "clamp(36px,7vw,42px)",
+                height: "clamp(36px,7vw,42px)",
+                borderRadius: "clamp(8px,1.5vw,11px)",
                 background: "linear-gradient(135deg,#1e40af,#3b82f6)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 18,
+                fontSize: "clamp(14px,2.5vw,18px)",
+                flexShrink: 0,
               }}
             >
               📚
             </div>
-            <div>
+            <div style={{ minWidth: 0 }}>
               <div
-                style={{ fontWeight: 800, fontSize: 15, color: "var(--txt)" }}
+                style={{
+                  fontWeight: 800,
+                  fontSize: "clamp(13px,2vw,15px)",
+                  color: "var(--txt)",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
               >
                 {t.brand}
               </div>
-              <div style={{ fontSize: 11, color: "#3b82f6", fontWeight: 600 }}>
+              <div
+                style={{
+                  fontSize: "clamp(9px,1.5vw,11px)",
+                  color: "#3b82f6",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {t.brandSub}
               </div>
             </div>
@@ -964,9 +1186,10 @@ export default function PSGVisitorBookingPortal() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              gap: "clamp(4px,1vw,8px)",
               flexWrap: "wrap",
               justifyContent: "flex-end",
+              width: "100%",
             }}
           >
             <button
@@ -1006,16 +1229,36 @@ export default function PSGVisitorBookingPortal() {
         <div className="sec">
           <div className="wrap" style={{ maxWidth: 560 }}>
             <div className="card fu">
-              <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 6 }}>
+              <h2 style={{
+                fontSize: "clamp(20px,4vw,24px)",
+                fontWeight: 800,
+                marginBottom: "clamp(4px,1vw,6px)",
+                margin: "0 0 clamp(4px,1vw,6px) 0",
+              }}>
                 {t.trackTitle}
               </h2>
-              <p style={{ color: "var(--t2)", fontSize: 14, marginBottom: 24 }}>
+              <p style={{
+                color: "var(--t2)",
+                fontSize: "clamp(12px,1.3vw,14px)",
+                marginBottom: "clamp(16px,2vw,24px)",
+                margin: "0 0 clamp(16px,2vw,24px) 0",
+              }}>
                 {t.trackSub}
               </p>
-              <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+              <div style={{
+                display: "flex",
+                gap: "clamp(6px,1.2vw,10px)",
+                marginBottom: "clamp(12px,2vw,16px)",
+                flexWrap: "wrap",
+              }}>
                 <input
                   className="inp"
-                  style={{ flex: 1, fontFamily: "monospace", letterSpacing: 1 }}
+                  style={{
+                    flex: 1,
+                    fontFamily: "monospace",
+                    letterSpacing: 1,
+                    minWidth: "clamp(150px,80vw,300px)",
+                  }}
                   placeholder={t.trackPh}
                   value={trackId}
                   onChange={(e) => setTrackId(e.target.value.toUpperCase())}
@@ -1026,6 +1269,7 @@ export default function PSGVisitorBookingPortal() {
                   className="btn pr"
                   onClick={handleTrack}
                   disabled={trackBusy || !trackId.trim()}
+                  style={{ minWidth: "clamp(80px,20vw,120px)" }}
                 >
                   {trackBusy ? <span className="spin" /> : t.trackBtn}
                 </button>
@@ -1166,7 +1410,7 @@ export default function PSGVisitorBookingPortal() {
             aria-label="Hero"
             style={{
               position: "relative",
-              minHeight: "92vh",
+              minHeight: "clamp(70vh,100vw,92vh)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -1182,8 +1426,8 @@ export default function PSGVisitorBookingPortal() {
                 position: "absolute",
                 top: 0,
                 right: 0,
-                width: 500,
-                height: 500,
+                width: "clamp(300px,40vw,500px)",
+                height: "clamp(300px,40vw,500px)",
                 background: "rgba(59,130,246,.15)",
                 borderRadius: "50%",
                 filter: "blur(130px)",
@@ -1194,8 +1438,8 @@ export default function PSGVisitorBookingPortal() {
                 position: "absolute",
                 bottom: 0,
                 left: 0,
-                width: 400,
-                height: 400,
+                width: "clamp(250px,35vw,400px)",
+                height: "clamp(250px,35vw,400px)",
                 background: "rgba(96,165,250,.1)",
                 borderRadius: "50%",
                 filter: "blur(120px)",
@@ -1207,21 +1451,23 @@ export default function PSGVisitorBookingPortal() {
                 position: "relative",
                 textAlign: "center",
                 color: "#fff",
-                padding: "0 20px",
-                maxWidth: 820,
+                padding: "clamp(20px,5vw,40px) clamp(12px,3vw,24px)",
+                maxWidth: "clamp(100%,90vw,820px)",
               }}
             >
               <div
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 10,
-                  padding: "10px 20px",
+                  gap: "clamp(6px,1.5vw,10px)",
+                  padding: "clamp(8px,1.5vw,10px) clamp(12px,2.5vw,20px)",
                   background: "rgba(255,255,255,.1)",
                   backdropFilter: "blur(12px)",
                   borderRadius: 30,
                   border: "1px solid rgba(255,255,255,.2)",
-                  marginBottom: 32,
+                  marginBottom: "clamp(20px,4vw,32px)",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
                 }}
               >
                 <span style={{ position: "relative", display: "inline-flex" }}>
@@ -1237,8 +1483,8 @@ export default function PSGVisitorBookingPortal() {
                   <span
                     style={{
                       position: "relative",
-                      width: 10,
-                      height: 10,
+                      width: "clamp(7px,1.5vw,10px)",
+                      height: "clamp(7px,1.5vw,10px)",
                       borderRadius: "50%",
                       background: "#bfdbfe",
                       display: "block",
@@ -1247,7 +1493,7 @@ export default function PSGVisitorBookingPortal() {
                 </span>
                 <span
                   style={{
-                    fontSize: 13,
+                    fontSize: "clamp(11px,1.5vw,13px)",
                     fontWeight: 600,
                     color: "#bfdbfe",
                     letterSpacing: ".5px",
@@ -1258,11 +1504,12 @@ export default function PSGVisitorBookingPortal() {
               </div>
               <h1
                 style={{
-                  fontSize: "clamp(36px,7vw,70px)",
+                  fontSize: "clamp(28px,7vw,70px)",
                   fontWeight: 900,
                   lineHeight: 1.1,
-                  marginBottom: 20,
+                  marginBottom: "clamp(12px,3vw,20px)",
                   letterSpacing: "-1px",
+                  margin: "0 0 clamp(12px,3vw,20px) 0",
                 }}
               >
                 <span
@@ -1287,21 +1534,22 @@ export default function PSGVisitorBookingPortal() {
               </h1>
               <p
                 style={{
-                  fontSize: "clamp(14px,2.5vw,20px)",
+                  fontSize: "clamp(13px,2.5vw,20px)",
                   color: "#bfdbfe",
-                  marginBottom: 16,
-                  maxWidth: 600,
-                  margin: "0 auto 16px",
+                  marginBottom: "clamp(10px,2vw,16px)",
+                  maxWidth: "100%",
+                  margin: "0 auto clamp(10px,2vw,16px)",
+                  lineHeight: 1.5,
                 }}
               >
                 {t.heroSub}
               </p>
               <p
                 style={{
-                  fontSize: 15,
+                  fontSize: "clamp(12px,1.8vw,15px)",
                   color: "rgba(191,219,254,.8)",
-                  maxWidth: 560,
-                  margin: "0 auto 40px",
+                  maxWidth: "100%",
+                  margin: "0 auto clamp(20px,3vw,40px)",
                   lineHeight: 1.7,
                 }}
               >
@@ -1310,15 +1558,20 @@ export default function PSGVisitorBookingPortal() {
               <div
                 style={{
                   display: "flex",
-                  gap: 12,
+                  gap: "clamp(8px,2vw,12px)",
                   justifyContent: "center",
                   flexWrap: "wrap",
-                  marginBottom: 32,
+                  marginBottom: "clamp(20px,3vw,32px)",
+                  paddingX: "clamp(12px,3vw,20px)",
                 }}
               >
                 <button
                   className="btn pr"
-                  style={{ fontSize: 15, padding: "13px 30px" }}
+                  style={{
+                    fontSize: "clamp(13px,1.5vw,15px)",
+                    padding: "clamp(10px,2vw,13px) clamp(20px,3vw,30px)",
+                    width: "clamp(100%,auto,auto)",
+                  }}
                   onClick={() =>
                     document
                       .getElementById("bform")
@@ -1330,33 +1583,40 @@ export default function PSGVisitorBookingPortal() {
                 <button
                   className="btn"
                   style={{
-                    fontSize: 15,
-                    padding: "13px 30px",
+                    fontSize: "clamp(13px,1.5vw,15px)",
+                    padding: "clamp(10px,2vw,13px) clamp(20px,3vw,30px)",
                     borderColor: "rgba(255,255,255,.3)",
                     color: "#fff",
                     background: "rgba(255,255,255,.08)",
                     border: "2px solid rgba(255,255,255,.3)",
+                    width: "clamp(100%,auto,auto)",
                   }}
                   onClick={() => setView("track")}
                 >
-                  🔍 Track Booking
+                  🔍 Track
                 </button>
               </div>
               <div
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 10,
-                  padding: "10px 20px",
+                  gap: "clamp(6px,1.5vw,10px)",
+                  padding: "clamp(8px,1.5vw,10px) clamp(12px,2.5vw,20px)",
                   background: "rgba(255,255,255,.1)",
                   backdropFilter: "blur(12px)",
                   borderRadius: 30,
                   border: "1px solid rgba(255,255,255,.2)",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
                 }}
               >
                 ⏱{" "}
                 <span
-                  style={{ fontSize: 13, fontWeight: 600, color: "#bfdbfe" }}
+                  style={{
+                    fontSize: "clamp(11px,1.5vw,13px)",
+                    fontWeight: 600,
+                    color: "#bfdbfe",
+                  }}
                 >
                   {t.heroTime}
                 </span>
@@ -1368,33 +1628,40 @@ export default function PSGVisitorBookingPortal() {
           <div
             style={{
               background: "linear-gradient(135deg,#1e40af,#3b82f6)",
-              padding: "28px 24px",
+              padding: "clamp(20px,4vw,28px) clamp(16px,4vw,24px)",
             }}
           >
             <div className="wrap">
-              <div style={{ textAlign: "center", marginBottom: 18 }}>
+              <div style={{ textAlign: "center", marginBottom: "clamp(12px,2vw,18px)" }}>
                 <span
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 6,
-                    padding: "4px 12px",
+                    gap: "clamp(4px,1vw,6px)",
+                    padding: "clamp(3px,0.8vw,4px) clamp(8px,1.5vw,12px)",
                     background: "rgba(255,255,255,.15)",
                     borderRadius: 20,
+                    flexWrap: "wrap",
+                    justifyContent: "center",
                   }}
                 >
                   <span
                     style={{
-                      width: 8,
-                      height: 8,
+                      width: "clamp(6px,1.2vw,8px)",
+                      height: "clamp(6px,1.2vw,8px)",
                       borderRadius: "50%",
                       background: "#4ade80",
                       display: "inline-block",
                       animation: "pingg 2s infinite",
+                      flexShrink: 0,
                     }}
                   />
                   <span
-                    style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}
+                    style={{
+                      color: "#fff",
+                      fontSize: "clamp(11px,1.2vw,12px)",
+                      fontWeight: 700,
+                    }}
                   >
                     {t.statsTitle}
                   </span>
@@ -1407,23 +1674,24 @@ export default function PSGVisitorBookingPortal() {
                   [t.statsInside, stats.inside, "🏛"],
                 ].map(([l, v, ic]) => (
                   <div key={l} className="statbox">
-                    <div style={{ fontSize: 26 }}>{ic}</div>
+                    <div style={{ fontSize: "clamp(18px,4vw,26px)" }}>{ic}</div>
                     <div
                       style={{
-                        fontSize: 32,
+                        fontSize: "clamp(24px,5vw,32px)",
                         fontWeight: 900,
                         color: "#fff",
                         lineHeight: 1.1,
+                        margin: "clamp(4px,1vw,8px) 0",
                       }}
                     >
                       {v}
                     </div>
                     <div
                       style={{
-                        fontSize: 12,
+                        fontSize: "clamp(11px,1.2vw,12px)",
                         color: "rgba(255,255,255,.8)",
                         fontWeight: 600,
-                        marginTop: 4,
+                        marginTop: "clamp(2px,0.5vw,4px)",
                       }}
                     >
                       {l}
@@ -1437,11 +1705,22 @@ export default function PSGVisitorBookingPortal() {
           {/* ══ HOW IT WORKS ══════════════════════════════════════════════ */}
           <div className="sec">
             <div className="wrap">
-              <div style={{ textAlign: "center", marginBottom: 50 }}>
-                <h2 style={{ fontSize: 34, fontWeight: 800, marginBottom: 8 }}>
+              <div style={{ textAlign: "center", marginBottom: "clamp(32px,6vw,50px)" }}>
+                <h2 style={{
+                  fontSize: "clamp(24px,5vw,34px)",
+                  fontWeight: 800,
+                  marginBottom: "clamp(6px,1.2vw,8px)",
+                  margin: "0 0 clamp(6px,1.2vw,8px) 0",
+                }}>
                   {t.howTitle}
                 </h2>
-                <p style={{ color: "var(--t2)", fontSize: 15 }}>{t.howSub}</p>
+                <p style={{
+                  color: "var(--t2)",
+                  fontSize: "clamp(13px,1.5vw,15px)",
+                  margin: 0,
+                }}>
+                  {t.howSub}
+                </p>
               </div>
               <div className="g3">
                 {[
@@ -1452,47 +1731,53 @@ export default function PSGVisitorBookingPortal() {
                   <div key={s.n} className="howbox">
                     <div
                       style={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: 18,
+                        width: "clamp(48px,8vw,60px)",
+                        height: "clamp(48px,8vw,60px)",
+                        borderRadius: "clamp(14px,2vw,18px)",
                         background: `${s.c}18`,
                         border: `2px solid ${s.c}30`,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: 26,
-                        margin: "0 auto 16px",
+                        fontSize: "clamp(20px,4vw,26px)",
+                        margin: "0 auto clamp(12px,2vw,16px)",
                       }}
                     >
                       {s.ic}
                     </div>
                     <div
                       style={{
-                        width: 26,
-                        height: 26,
+                        width: "clamp(22px,4vw,26px)",
+                        height: "clamp(22px,4vw,26px)",
                         borderRadius: "50%",
                         background: s.c,
                         color: "#fff",
-                        fontSize: 12,
+                        fontSize: "clamp(10px,1.2vw,12px)",
                         fontWeight: 700,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        margin: "0 auto 12px",
+                        margin: "0 auto clamp(8px,1.5vw,12px)",
                       }}
                     >
                       {s.n}
                     </div>
                     <h3
-                      style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}
+                      style={{
+                        fontWeight: 700,
+                        fontSize: "clamp(14px,2vw,16px)",
+                        marginBottom: "clamp(6px,1vw,8px)",
+                        margin: "0 0 clamp(6px,1vw,8px) 0",
+                      }}
                     >
                       {s.t2}
                     </h3>
                     <p
                       style={{
                         color: "var(--t2)",
-                        fontSize: 13,
+                        fontSize: "clamp(12px,1.3vw,13px)",
                         lineHeight: 1.6,
+                        margin: 0,
                       }}
                     >
                       {s.d}
@@ -1508,29 +1793,34 @@ export default function PSGVisitorBookingPortal() {
             className="sec"
             style={{
               background: "var(--s2)",
-              paddingTop: 60,
-              paddingBottom: 60,
+              paddingTop: "clamp(40px,8vw,60px)",
+              paddingBottom: "clamp(40px,8vw,60px)",
             }}
           >
             <div className="wrap">
-              <div className="g2" style={{ gap: 28 }}>
+              <div className="g2" style={{ gap: "clamp(16px,3vw,28px)" }}>
                 {/* Operating hours */}
                 <div className="card">
                   <h3
-                    style={{ fontWeight: 700, fontSize: 18, marginBottom: 18 }}
+                    style={{
+                      fontWeight: 700,
+                      fontSize: "clamp(16px,2vw,18px)",
+                      marginBottom: "clamp(12px,2vw,18px)",
+                      margin: "0 0 clamp(12px,2vw,18px) 0",
+                    }}
                   >
                     🕘 {t.hoursTitle}
                   </h3>
                   {isWeekend && (
                     <div
                       style={{
-                        marginBottom: 14,
-                        padding: "10px 14px",
-                        borderRadius: 8,
+                        marginBottom: "clamp(10px,1.5vw,14px)",
+                        padding: "clamp(8px,1.5vw,10px) clamp(10px,1.5vw,14px)",
+                        borderRadius: "clamp(6px,1vw,8px)",
                         background: "#fef3c7",
                         border: "1px solid #fcd34d",
                         color: "#92400e",
-                        fontSize: 13,
+                        fontSize: "clamp(12px,1.2vw,13px)",
                         fontWeight: 600,
                       }}
                     >
@@ -1540,13 +1830,13 @@ export default function PSGVisitorBookingPortal() {
                   {isSat && (
                     <div
                       style={{
-                        marginBottom: 14,
-                        padding: "10px 14px",
-                        borderRadius: 8,
+                        marginBottom: "clamp(10px,1.5vw,14px)",
+                        padding: "clamp(8px,1.5vw,10px) clamp(10px,1.5vw,14px)",
+                        borderRadius: "clamp(6px,1vw,8px)",
                         background: "#eff6ff",
                         border: "1px solid #bfdbfe",
                         color: "#1e40af",
-                        fontSize: 13,
+                        fontSize: "clamp(12px,1.2vw,13px)",
                         fontWeight: 600,
                       }}
                     >
@@ -1564,21 +1854,29 @@ export default function PSGVisitorBookingPortal() {
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        padding: "10px 0",
+                        padding: "clamp(8px,1.5vw,10px) 0",
                         borderBottom: "1px solid var(--bdr)",
+                        gap: "clamp(8px,1.5vw,12px)",
+                        flexWrap: "wrap",
                       }}
                     >
-                      <span style={{ fontWeight: 600, fontSize: 14 }}>
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          fontSize: "clamp(12px,1.3vw,14px)",
+                        }}
+                      >
                         {r.d}
                       </span>
                       <span
                         style={{
-                          fontSize: 13,
+                          fontSize: "clamp(11px,1.1vw,13px)",
                           fontWeight: 700,
-                          padding: "3px 10px",
+                          padding: "clamp(2px,0.5vw,3px) clamp(8px,1.5vw,10px)",
                           borderRadius: 20,
                           color: r.open ? "#10b981" : "#ef4444",
                           background: r.open ? "#d1fae5" : "#fee2e2",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {r.h}
@@ -1586,19 +1884,24 @@ export default function PSGVisitorBookingPortal() {
                     </div>
                   ))}
                   <p
-                    style={{ fontSize: 12, color: "var(--t2)", marginTop: 12 }}
+                    style={{
+                      fontSize: "clamp(11px,1.1vw,12px)",
+                      color: "var(--t2)",
+                      marginTop: "clamp(10px,1.5vw,12px)",
+                      margin: "clamp(10px,1.5vw,12px) 0 0 0",
+                    }}
                   >
                     ℹ️ {t.hoursNote}
                   </p>
-                  <div style={{ marginTop: 16 }}>
+                  <div style={{ marginTop: "clamp(12px,2vw,16px)" }}>
                     <div
                       style={{
-                        fontSize: 11,
+                        fontSize: "clamp(10px,1vw,11px)",
                         fontWeight: 700,
                         color: "var(--t2)",
                         textTransform: "uppercase",
                         letterSpacing: 0.5,
-                        marginBottom: 8,
+                        marginBottom: "clamp(6px,1vw,8px)",
                       }}
                     >
                       Upcoming Holidays
@@ -1607,8 +1910,8 @@ export default function PSGVisitorBookingPortal() {
                       <div
                         key={h}
                         style={{
-                          fontSize: 13,
-                          padding: "3px 0",
+                          fontSize: "clamp(12px,1.2vw,13px)",
+                          padding: "clamp(2px,0.5vw,3px) 0",
                           color: "var(--t2)",
                         }}
                       >
@@ -1630,33 +1933,45 @@ export default function PSGVisitorBookingPortal() {
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: 22, marginBottom: 10 }}>🎉</div>
+                  <div style={{ fontSize: "clamp(16px,3vw,22px)", marginBottom: "clamp(8px,1.5vw,10px)" }}>🎉</div>
                   <div
                     style={{
-                      fontSize: 68,
+                      fontSize: "clamp(48px,8vw,68px)",
                       fontWeight: 900,
                       color: "#1e40af",
                       lineHeight: 1,
-                      marginBottom: 8,
+                      marginBottom: "clamp(6px,1vw,8px)",
+                      margin: "0 0 clamp(6px,1vw,8px) 0",
                     }}
                   >
                     {visCount.toLocaleString()}+
                   </div>
                   <div
-                    style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}
+                    style={{
+                      fontSize: "clamp(14px,2.5vw,17px)",
+                      fontWeight: 700,
+                      marginBottom: "clamp(6px,1vw,8px)",
+                      margin: "0 0 clamp(6px,1vw,8px) 0",
+                    }}
                   >
                     {t.socialCount}
                   </div>
                   <p
-                    style={{ fontSize: 13, color: "var(--t2)", maxWidth: 260 }}
+                    style={{
+                      fontSize: "clamp(12px,1.3vw,13px)",
+                      color: "var(--t2)",
+                      maxWidth: "100%",
+                      margin: "0 0 clamp(16px,2.5vw,22px) 0",
+                      lineHeight: 1.5,
+                    }}
                   >
                     {t.socialSub}
                   </p>
                   <div
                     style={{
                       display: "flex",
-                      gap: 8,
-                      marginTop: 22,
+                      gap: "clamp(6px,1vw,8px)",
+                      marginTop: 0,
                       flexWrap: "wrap",
                       justifyContent: "center",
                     }}
@@ -1670,12 +1985,13 @@ export default function PSGVisitorBookingPortal() {
                       <span
                         key={s}
                         style={{
-                          fontSize: 11,
-                          padding: "5px 11px",
+                          fontSize: "clamp(10px,1.1vw,11px)",
+                          padding: "clamp(4px,0.8vw,5px) clamp(8px,1.5vw,11px)",
                           borderRadius: 20,
                           background: "var(--bluebg)",
                           color: "var(--blue)",
                           fontWeight: 600,
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {s}
@@ -1690,16 +2006,30 @@ export default function PSGVisitorBookingPortal() {
           {/* ══ BOOKING FORM ══════════════════════════════════════════════ */}
           <div className="sec" id="bform" role="main">
             <div className="wrap" style={{ maxWidth: 720 }}>
-              <div style={{ textAlign: "center", marginBottom: 36 }}>
-                <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8 }}>
+              <div style={{ textAlign: "center", marginBottom: "clamp(24px,4vw,36px)" }}>
+                <h2 style={{
+                  fontSize: "clamp(24px,4.5vw,32px)",
+                  fontWeight: 800,
+                  marginBottom: "clamp(6px,1.2vw,8px)",
+                  margin: "0 0 clamp(6px,1.2vw,8px) 0",
+                }}>
                   {t.bookTitle}
                 </h2>
-                <p style={{ color: "var(--t2)", fontSize: 15 }}>{t.bookSub}</p>
+                <p style={{
+                  color: "var(--t2)",
+                  fontSize: "clamp(13px,1.5vw,15px)",
+                  margin: 0,
+                }}>
+                  {t.bookSub}
+                </p>
               </div>
 
               <div
                 className="card"
-                style={{ borderRadius: 22, padding: "clamp(22px,5vw,44px)" }}
+                style={{
+                  borderRadius: "clamp(16px,3vw,22px)",
+                  padding: "clamp(16px,4vw,44px)",
+                }}
               >
                 {/* Step indicator */}
                 <div
@@ -2614,18 +2944,18 @@ export default function PSGVisitorBookingPortal() {
             style={{
               background: dark ? "#0f172a" : "#1e293b",
               color: "#94a3b8",
-              padding: "56px 24px 28px",
+              padding: "clamp(36px,6vw,56px) clamp(16px,4vw,24px) clamp(20px,3vw,28px)",
             }}
           >
             <div className="wrap">
-              <div className="g2" style={{ marginBottom: 36 }}>
+              <div className="g2" style={{ marginBottom: "clamp(24px,4vw,36px)" }}>
                 <div>
                   <div
                     style={{
                       fontWeight: 700,
                       color: "#fff",
-                      marginBottom: 14,
-                      fontSize: 15,
+                      marginBottom: "clamp(10px,2vw,14px)",
+                      fontSize: "clamp(13px,1.5vw,15px)",
                     }}
                   >
                     {t.fContact}
@@ -2635,7 +2965,13 @@ export default function PSGVisitorBookingPortal() {
                     "📞 +91-422-2357000",
                     "🏢 Campus Visit Desk",
                   ].map((x) => (
-                    <div key={x} style={{ fontSize: 13, marginBottom: 8 }}>
+                    <div
+                      key={x}
+                      style={{
+                        fontSize: "clamp(12px,1.2vw,13px)",
+                        marginBottom: "clamp(6px,1vw,8px)",
+                      }}
+                    >
                       {x}
                     </div>
                   ))}
@@ -2645,8 +2981,8 @@ export default function PSGVisitorBookingPortal() {
                     style={{
                       fontWeight: 700,
                       color: "#fff",
-                      marginBottom: 14,
-                      fontSize: 15,
+                      marginBottom: "clamp(10px,2vw,14px)",
+                      fontSize: "clamp(13px,1.5vw,15px)",
                     }}
                   >
                     {t.fLinks}
@@ -2656,8 +2992,8 @@ export default function PSGVisitorBookingPortal() {
                       <div
                         key={x}
                         style={{
-                          fontSize: 13,
-                          marginBottom: 8,
+                          fontSize: "clamp(12px,1.2vw,13px)",
+                          marginBottom: "clamp(6px,1vw,8px)",
                           cursor: "pointer",
                           transition: "color .2s",
                         }}
@@ -2673,13 +3009,14 @@ export default function PSGVisitorBookingPortal() {
               <div
                 style={{
                   borderTop: "1px solid #334155",
-                  paddingTop: 20,
+                  paddingTop: "clamp(14px,2vw,20px)",
                   textAlign: "center",
-                  fontSize: 12,
+                  fontSize: "clamp(11px,1.1vw,12px)",
                   color: "#475569",
                 }}
               >
-                © 2025 PSG Institutions. All rights reserved. | Powered by Central IT Services Team
+                © 2025 PSG Institutions. All rights reserved. | Powered by
+                Central IT Services Team
               </div>
             </div>
           </footer>
