@@ -1100,6 +1100,117 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   body{-webkit-font-smoothing:subpixel-antialiased}
 }
 
+/* ─── Hamburger Menu ─── */
+.hamburger{
+  display:none;
+  flex-direction:column;
+  gap:4px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  padding:clamp(6px,1.5vw,8px);
+  position:relative;
+  z-index:101;
+}
+
+.hamburger span{
+  display:block;
+  width:clamp(22px,5vw,26px);
+  height:2px;
+  background:var(--txt);
+  border-radius:1px;
+  transition:all .3s ease;
+}
+
+.hamburger.open span:nth-child(1){
+  transform:rotate(45deg) translate(10px,10px);
+}
+
+.hamburger.open span:nth-child(2){
+  opacity:0;
+}
+
+.hamburger.open span:nth-child(3){
+  transform:rotate(-45deg) translate(7px,-6px);
+}
+
+.mobile-menu{
+  display:none;
+  position:fixed;
+  top:clamp(56px,10vw,62px);
+  left:0;
+  right:0;
+  background:var(--card);
+  border-bottom:1px solid var(--bdr);
+  z-index:99;
+  flex-direction:column;
+  gap:clamp(8px,1.5vw,12px);
+  padding:clamp(12px,2.5vw,16px);
+  animation:slideDown .3s ease both;
+  max-height:calc(100vh - clamp(56px,10vw,62px));
+  overflow-y:auto;
+}
+
+.mobile-menu.open{
+  display:flex;
+}
+
+@keyframes slideDown{
+  from{
+    opacity:0;
+    transform:translateY(-10px)
+  }
+  to{
+    opacity:1;
+    transform:translateY(0)
+  }
+}
+
+.nav-button-group{
+  display:flex;
+  gap:clamp(4px,1vw,8px);
+  flex-wrap:wrap;
+}
+
+.nav-button-group.mobile{
+  flex-direction:column;
+  gap:clamp(8px,1.5vw,10px)
+}
+
+.nav-button-group.mobile .btn{
+  width:100%;
+  justify-content:center;
+}
+
+@media(max-width:640px){
+  .hamburger{display:flex}
+  
+  .nav-button-group:not(.mobile){
+    display:none!important
+  }
+  
+  .mobile-menu{
+    display:none
+  }
+  
+  .mobile-menu.open{
+    display:flex
+  }
+}
+
+@media(min-width:641px){
+  .hamburger{display:none!important}
+  .mobile-menu{display:none!important}
+  
+  .nav-button-group.mobile{
+    display:none!important
+  }
+  
+  .nav-button-group:not(.mobile){
+    display:flex!important
+  }
+}
+
 /* Print styles */
 @media print{
   .sec{padding:20px}
@@ -1131,15 +1242,17 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
             alignItems: "center",
             justifyContent: "space-between",
             gap: "clamp(8px,2vw,12px)",
-            flexWrap: "wrap",
+            position: "relative",
           }}
         >
+          {/* Logo */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: "clamp(6px,1.5vw,10px)",
               flexShrink: 0,
+              zIndex: 102,
             }}
           >
             <div
@@ -1182,16 +1295,9 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
               </div>
             </div>
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "clamp(4px,1vw,8px)",
-              flexWrap: "wrap",
-              justifyContent: "flex-end",
-              width: "100%",
-            }}
-          >
+
+          {/* Desktop Nav Buttons */}
+          <div className="nav-button-group">
             <button
               className="btn ou sm"
               onClick={() => setView((v) => (v === "track" ? "home" : "track"))}
@@ -1221,8 +1327,88 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
               {t.login}
             </button>
           </div>
+
+          {/* Hamburger Menu Button */}
+          <button
+            className={`hamburger${navOpen ? " open" : ""}`}
+            onClick={() => setNavOpen((p) => !p)}
+            aria-label="Toggle mobile menu"
+            aria-expanded={navOpen}
+            aria-controls="mobile-menu"
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        <div
+          id="mobile-menu"
+          className={`mobile-menu${navOpen ? " open" : ""}`}
+          style={{
+            backgroundColor: dark ? "rgba(15,23,42,.95)" : "rgba(255,255,255,.95)",
+          }}
+        >
+          <div className="nav-button-group mobile">
+            <button
+              className="btn ou"
+              onClick={() => {
+                setView((v) => (v === "track" ? "home" : "track"));
+                setNavOpen(false);
+              }}
+              aria-label="Toggle booking tracker"
+            >
+              {view === "track" ? "← Home" : "🔍 Track Booking"}
+            </button>
+            <button
+              className="btn ou"
+              onClick={() => {
+                setLang((l) => (l === "en" ? "ta" : "en"));
+                setNavOpen(false);
+              }}
+              aria-label="Toggle language"
+            >
+              {lang === "en" ? "தமிழ் Tamil" : "🇬🇧 English"}
+            </button>
+            <button
+              className="btn ou"
+              onClick={() => {
+                setDark((d) => !d);
+                setNavOpen(false);
+              }}
+              aria-label={dark ? t.light : t.dark}
+            >
+              {dark ? "☀️ Light Mode" : "🌙 Dark Mode"}
+            </button>
+            <button
+              className="btn pr"
+              onClick={() => {
+                navigate("/login");
+                setNavOpen(false);
+              }}
+              aria-label={t.login}
+            >
+              {t.login}
+            </button>
+          </div>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay Backdrop */}
+      {navOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,.3)",
+            zIndex: 98,
+            top: "clamp(56px,10vw,62px)",
+          }}
+          onClick={() => setNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       {/* ══ TRACK VIEW ════════════════════════════════════════════════ */}
       {view === "track" && (
