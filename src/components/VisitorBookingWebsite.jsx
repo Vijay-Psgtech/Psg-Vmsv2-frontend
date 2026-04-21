@@ -664,7 +664,7 @@ export default function PSGVisitorBookingPortal() {
     setLoading(true);
     try {
       const host = hosts.find((h) => h._id === form.hostId);
-      const payload = { ...form, host: host?.name || "" };
+      const payload = { ...form, host: host?.name || "", hostEmail: host?.email || "" };
       delete payload.idFile;
       const r = await fetch(`${API}/visitor`, {
         method: "POST",
