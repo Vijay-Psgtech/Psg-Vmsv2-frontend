@@ -11,6 +11,7 @@
 
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme, useMediaQuery } from '@mui/material';
 import {
   Box, Button, Card, CardContent, Dialog, DialogTitle, DialogContent,
   DialogActions, Grid, IconButton, Paper, Stack, TextField, Typography,
@@ -69,6 +70,28 @@ const THEMES = {
   },
 };
 
+// ─── Responsive Utilities ───────────────────────────────────────────────
+const responsiveSizes = {
+  headerIconSize: { xs: 20, sm: 24, md: 28 },
+  cardIconSize: { xs: 18, sm: 22, md: 26 },
+  statIconSize: { xs: 20, sm: 22, md: 26 },
+  avatarSize: { xs: 32, sm: 40, md: 48 },
+  headerPadding: { xs: 1, sm: 1.5, md: 2 },
+  containerPadding: { xs: 1, sm: 2, md: 3 },
+  cardPadding: { xs: 1.5, sm: 2, md: 2.5 },
+  spacingGap: { xs: 1, sm: 1.5, md: 2 },
+};
+
+const responsiveTypography = {
+  headerTitle: { xs: '16px', sm: '18px', md: '20px', fontWeight: 900 },
+  sectionTitle: { xs: '14px', sm: '16px', md: '18px', fontWeight: 800 },
+  cardTitle: { xs: '13px', sm: '14px', md: '15px', fontWeight: 800 },
+  bodyText: { xs: '12px', sm: '13px', md: '14px' },
+  caption: { xs: '10px', sm: '11px', md: '12px' },
+  statValue: { xs: '28px', sm: '32px', md: '38px', fontWeight: 900 },
+  statLabel: { xs: '10px', sm: '11px', md: '12px', fontWeight: 700 },
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────
 function fmtTime(d) { return d ? new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'; }
 function fmtDT(d)   { return d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'; }
@@ -92,6 +115,7 @@ function extractVisitors(response) {
 // ─── Live Clock ────────────────────────────────────────────────────────────
 function LiveClock({ t }) {
   const [now, setNow] = useState(new Date());
+  const isMobile = useMediaQuery('(max-width:600px)');
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
@@ -99,20 +123,27 @@ function LiveClock({ t }) {
   const shift = getShift(now.getHours());
   const ShiftIcon = shift.icon;
   return (
-    <Stack direction="row" spacing={1.5} alignItems="center">
-      <Box sx={{ textAlign: 'right' }}>
-        <Typography sx={{ fontSize: '20px', fontWeight: 900, color: t.text, fontFamily: 'monospace', lineHeight: 1 }}>
+    <Stack direction="row" spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center" flexWrap={{ xs: 'wrap', sm: 'nowrap' }}>
+      <Box sx={{ textAlign: 'right', minWidth: isMobile ? 'auto' : '90px' }}>
+        <Typography sx={{ 
+          fontSize: { xs: '16px', sm: '18px', md: '20px' }, 
+          fontWeight: 900, color: t.text, fontFamily: 'monospace', lineHeight: 1 
+        }}>
           {now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
         </Typography>
-        <Typography sx={{ fontSize: '11px', color: t.textSecondary }}>
+        <Typography sx={{ fontSize: { xs: '9px', sm: '10px', md: '11px' }, color: t.textSecondary, mt: 0.25 }}>
           {now.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' })}
         </Typography>
       </Box>
       <Chip
-        icon={<ShiftIcon sx={{ fontSize: '14px !important' }} />}
+        icon={<ShiftIcon sx={{ fontSize: { xs: '12px', sm: '13px', md: '14px' } }} />}
         label={shift.short}
         size="small"
-        sx={{ bgcolor: `${shift.color}20`, color: shift.color, fontWeight: 800, fontSize: '11px', border: `1px solid ${shift.color}40` }}
+        sx={{ 
+          bgcolor: `${shift.color}20`, color: shift.color, fontWeight: 800, 
+          fontSize: { xs: '10px', sm: '11px' }, border: `1px solid ${shift.color}40`,
+          height: { xs: 24, sm: 28 }
+        }}
       />
     </Stack>
   );
@@ -316,57 +347,71 @@ function QRScannerModal({ open, onClose, onScan, t }) {
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 3, bgcolor: t.bg, border: '1px solid ' + t.border } }}
+      PaperProps={{ sx: { 
+        borderRadius: { xs: 2, md: 3 }, 
+        bgcolor: t.bg, 
+        border: '1px solid ' + t.border,
+        margin: { xs: 1, sm: 2 }
+      } }}
     >
-      <DialogTitle sx={{ color: t.text, fontWeight: 800, borderBottom: '1px solid ' + t.border, pb: 1.5 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <QrCodeIcon sx={{ color: t.inside, fontSize: 22 }} />
-            <Box>
-              <Typography fontWeight={800} fontSize={16} sx={{ color: t.text }}>QR Code Scanner</Typography>
-              <Typography fontSize={11} sx={{ color: t.textSecondary }}>Verify visitor entry pass</Typography>
+      <DialogTitle sx={{ 
+        color: t.text, fontWeight: 800, borderBottom: '1px solid ' + t.border, 
+        pb: 1.5, px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 }
+      }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
+          <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="center" minWidth={0}>
+            <QrCodeIcon sx={{ color: t.inside, fontSize: { xs: 20, sm: 22, md: 24 }, flexShrink: 0 }} />
+            <Box minWidth={0}>
+              <Typography fontWeight={800} fontSize={{ xs: 14, sm: 16 }} sx={{ color: t.text }}>QR Code Scanner</Typography>
+              <Typography fontSize={{ xs: 10, sm: 11 }} sx={{ color: t.textSecondary }}>Verify visitor entry pass</Typography>
             </Box>
           </Stack>
-          <IconButton size="small" onClick={handleClose} sx={{ color: t.textSecondary }}>
+          <IconButton size="small" onClick={handleClose} sx={{ color: t.textSecondary, flexShrink: 0 }}>
             <CloseIcon fontSize="small" />
           </IconButton>
         </Stack>
       </DialogTitle>
 
-      <DialogContent sx={{ pt: 2.5, bgcolor: t.bg }}>
+      <DialogContent sx={{ pt: { xs: 1.5, sm: 2.5 }, px: { xs: 2, sm: 3 }, bgcolor: t.bg }}>
 
         {/* ── Mode Toggle ── */}
         {scanState !== 'found' && (
-          <Stack alignItems="center" mb={2.5}>
+          <Stack alignItems="center" mb={{ xs: 1.5, sm: 2.5 }}>
             <ToggleButtonGroup
               value={mode}
               exclusive
               size="small"
               onChange={handleModeChange}
-              sx={{ bgcolor: t.surface, border: '1px solid ' + t.border, borderRadius: 2, overflow: 'hidden' }}
+              sx={{ 
+                bgcolor: t.surface, border: '1px solid ' + t.border, 
+                borderRadius: 2, overflow: 'hidden', width: '100%',
+                '& .MuiToggleButton-root': { flex: 1, fontSize: { xs: '11px', sm: '12px' } }
+              }}
             >
               <ToggleButton
                 value="file"
                 sx={{
-                  px: 3, py: 1, fontWeight: 700, fontSize: '12px', border: 'none',
+                  px: { xs: 1.5, sm: 3 }, py: { xs: 0.75, sm: 1 }, fontWeight: 700, border: 'none',
                   '&.Mui-selected': { bgcolor: t.inside, color: '#fff' },
                 }}
               >
-                <UploadFileIcon sx={{ fontSize: 16, mr: 0.75 }} />
-                Upload QR Image
+                <UploadFileIcon sx={{ fontSize: { xs: 14, sm: 16 }, mr: 0.5 }} />
+                <span style={{ display: { xs: 'none', sm: 'inline' } }}>Upload QR Image</span>
+                <span style={{ display: { xs: 'inline', sm: 'none' } }}>Upload</span>
               </ToggleButton>
               <ToggleButton
                 value="camera"
                 sx={{
-                  px: 3, py: 1, fontWeight: 700, fontSize: '12px', border: 'none',
+                  px: { xs: 1.5, sm: 3 }, py: { xs: 0.75, sm: 1 }, fontWeight: 700, border: 'none',
                   '&.Mui-selected': { bgcolor: t.inside, color: '#fff' },
                 }}
               >
-                <CameraAltIcon sx={{ fontSize: 16, mr: 0.75 }} />
-                Camera
+                <CameraAltIcon sx={{ fontSize: { xs: 14, sm: 16 }, mr: 0.5 }} />
+                <span style={{ display: { xs: 'none', sm: 'inline' } }}>Camera</span>
+                <span style={{ display: { xs: 'inline', sm: 'none' } }}>Scan</span>
               </ToggleButton>
             </ToggleButtonGroup>
-            <Typography fontSize={11} sx={{ color: t.textSecondary, mt: 1 }}>
+            <Typography fontSize={{ xs: 10, sm: 11 }} sx={{ color: t.textSecondary, mt: { xs: 0.75, sm: 1 } }}>
               {'💡 ' + modeHint}
             </Typography>
           </Stack>
@@ -382,9 +427,9 @@ function QRScannerModal({ open, onClose, onScan, t }) {
                 onDrop={handleDrop}
                 onClick={handleBoxClick}
                 sx={{
-                  border: '2.5px dashed ' + (dragOver ? t.inside : t.border),
+                  border: `${dragOver ? '2px' : '2.5px'} dashed ${dragOver ? t.inside : t.border}`,
                   borderRadius: 3,
-                  p: 5,
+                  p: { xs: 3, sm: 5 },
                   textAlign: 'center',
                   cursor: 'pointer',
                   bgcolor: dragOver ? t.inside + '08' : t.surface,
@@ -399,25 +444,26 @@ function QRScannerModal({ open, onClose, onScan, t }) {
                   style={{ display: 'none' }}
                   onChange={handleFileInput}
                 />
-                <Box sx={{ p: 2, borderRadius: 2, bgcolor: t.inside + '15', display: 'inline-flex', mb: 2 }}>
-                  <ImageSearchIcon sx={{ fontSize: 36, color: t.inside }} />
+                <Box sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 2, bgcolor: t.inside + '15', display: 'inline-flex', mb: { xs: 1.5, sm: 2 } }}>
+                  <ImageSearchIcon sx={{ fontSize: { xs: 28, sm: 36 }, color: t.inside }} />
                 </Box>
-                <Typography fontWeight={700} fontSize={15} sx={{ color: t.text, mb: 0.75 }}>
+                <Typography fontWeight={700} fontSize={{ xs: 13, sm: 15 }} sx={{ color: t.text, mb: { xs: 0.5, sm: 0.75 } }}>
                   Drop QR Image Here
                 </Typography>
-                <Typography fontSize={13} sx={{ color: t.textSecondary, mb: 2 }}>
-                  or click to browse — PNG, JPG, WEBP supported
+                <Typography fontSize={{ xs: 12, sm: 13 }} sx={{ color: t.textSecondary, mb: { xs: 1.5, sm: 2 } }}>
+                  or click to browse — PNG, JPG, WEBP
                 </Typography>
                 <Button
                   variant="contained"
                   startIcon={<UploadFileIcon />}
                   onClick={handleBtnClick}
-                  sx={{ bgcolor: t.inside, color: '#fff', fontWeight: 700, borderRadius: 2 }}
+                  size="small"
+                  sx={{ bgcolor: t.inside, color: '#fff', fontWeight: 700, borderRadius: 2, fontSize: { xs: '11px', sm: '12px' } }}
                 >
-                  Choose QR File
+                  Choose File
                 </Button>
-                <Typography fontSize={11} sx={{ color: t.textSecondary, mt: 2 }}>
-                  Use the original QR PNG from the approval email. Do not use a screenshot of a screen.
+                <Typography fontSize={{ xs: 10, sm: 11 }} sx={{ color: t.textSecondary, mt: { xs: 1.5, sm: 2 } }}>
+                  Use the original PNG from approval email
                 </Typography>
               </Box>
             )}
@@ -614,33 +660,51 @@ function TimelineDialog({ open, visitor, onClose, t }) {
     ? Math.max(0, Math.ceil((new Date(visitor.allowedUntil) - now) / 60000)) : null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-      <DialogTitle sx={{ fontWeight: 800, borderBottom: `1.5px solid ${t.border}`, bgcolor: t.surface, color: t.text }}>
-        <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between">
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <TimelineIcon sx={{ color: t.inside }} />
-            <Box>
-              <Typography fontWeight={800} fontSize={15} sx={{ color: t.text }}>{visitor.name}</Typography>
-              <Typography fontSize={11} sx={{ color: t.textSecondary }}>{visitor.visitorId} · {fmtDate(visitor.createdAt)}</Typography>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth 
+      PaperProps={{ sx: { 
+        borderRadius: { xs: 2, md: 3 },
+        margin: { xs: 1, sm: 2 }
+      } }}
+    >
+      <DialogTitle sx={{ 
+        fontWeight: 800, borderBottom: `1.5px solid ${t.border}`, bgcolor: t.surface, 
+        color: t.text, px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 }
+      }}>
+        <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="center" justifyContent="space-between">
+          <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="center" minWidth={0}>
+            <TimelineIcon sx={{ color: t.inside, fontSize: { xs: 18, sm: 20 }, flexShrink: 0 }} />
+            <Box minWidth={0}>
+              <Typography fontWeight={800} fontSize={{ xs: 14, sm: 15 }} sx={{ color: t.text, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {visitor.name}
+              </Typography>
+              <Typography fontSize={{ xs: 10, sm: 11 }} sx={{ color: t.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {visitor.visitorId} · {fmtDate(visitor.createdAt)}
+              </Typography>
             </Box>
           </Stack>
           <Chip label={visitor.status} size="small" sx={{
-            fontWeight: 700, fontSize: '11px',
+            fontWeight: 700, fontSize: { xs: '10px', sm: '11px' },
             bgcolor: { PENDING: '#fef9c3', APPROVED: '#d1fae5', IN: '#dbeafe', OVERSTAY: '#fee2e2', OUT: '#f1f5f9' }[visitor.status] || '#f1f5f9',
             color:   { PENDING: '#713f12', APPROVED: '#065f46', IN: '#1e40af', OVERSTAY: '#991b1b', OUT: '#374151' }[visitor.status] || '#374151',
+            height: { xs: 20, sm: 22 },
+            flexShrink: 0
           }} />
         </Stack>
       </DialogTitle>
-      <DialogContent sx={{ pt: 3, bgcolor: t.bg }}>
+      <DialogContent sx={{ pt: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3 }, bgcolor: t.bg }}>
 
         {/* Visitor info grid */}
-        <Box sx={{ p: 2, borderRadius: 2, bgcolor: t.surface, border: `1px solid ${t.border}`, mb: 3 }}>
-          <Grid container spacing={1.5}>
+        <Box sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 2, bgcolor: t.surface, border: `1px solid ${t.border}`, mb: 3 }}>
+          <Grid container spacing={{ xs: 1, sm: 1.5 }}>
             {[['Phone', visitor.phone], ['Email', visitor.email], ['Company', visitor.company],
               ['Gate', `Gate ${visitor.gate}`], ['Host', visitor.host], ['Purpose', visitor.purpose]].map(([l, v]) => v ? (
               <Grid item xs={6} key={l}>
-                <Typography fontSize={10} fontWeight={700} sx={{ color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{l}</Typography>
-                <Typography fontSize={12} fontWeight={600} sx={{ color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v}</Typography>
+                <Typography fontSize={{ xs: 9, sm: 10 }} fontWeight={700} sx={{ color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '0.5px', mb: 0.25 }}>{l}</Typography>
+                <Typography fontSize={{ xs: 11, sm: 12 }} fontWeight={600} sx={{ color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v}</Typography>
               </Grid>
             ) : null)}
           </Grid>
@@ -652,15 +716,15 @@ function TimelineDialog({ open, visitor, onClose, t }) {
             <Step key={i} completed={s.done}>
               <StepLabel
                 StepIconProps={{ sx: { color: s.done ? s.color : '#cbd5e1' } }}
-                sx={{ '& .MuiStepLabel-label': { fontWeight: s.done ? 700 : 400, fontSize: '13px', color: t.text } }}
+                sx={{ '& .MuiStepLabel-label': { fontWeight: s.done ? 700 : 400, fontSize: { xs: '12px', sm: '13px' }, color: t.text } }}
               >
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
                   <span>{s.label}</span>
-                  {s.time && s.done && <Typography fontSize={11} sx={{ color: t.textSecondary }}>{fmtDT(s.time)}</Typography>}
+                  {s.time && s.done && <Typography fontSize={{ xs: '10px', sm: '11px' }} sx={{ color: t.textSecondary, whiteSpace: 'nowrap' }}>{fmtDT(s.time)}</Typography>}
                 </Stack>
               </StepLabel>
               <StepContent>
-                <Typography fontSize={12} sx={{ color: t.textSecondary, pb: 1 }}>{s.desc}</Typography>
+                <Typography fontSize={{ xs: '11px', sm: '12px' }} sx={{ color: t.textSecondary, pb: 1 }}>{s.desc}</Typography>
               </StepContent>
             </Step>
           ))}
@@ -668,23 +732,23 @@ function TimelineDialog({ open, visitor, onClose, t }) {
 
         {/* Status indicators */}
         {visitor.status === 'OVERSTAY' && overstayMins > 0 && (
-          <Box sx={{ mt: 2, p: 1.5, borderRadius: 1.5, bgcolor: '#fee2e2', border: '1.5px solid #ef4444' }}>
-            <Typography fontSize={12} fontWeight={700} color="#991b1b">⚠️ Overstaying by {overstayMins} minutes</Typography>
+          <Box sx={{ mt: 2, p: { xs: 1, sm: 1.5 }, borderRadius: 1.5, bgcolor: '#fee2e2', border: '1.5px solid #ef4444' }}>
+            <Typography fontSize={{ xs: '11px', sm: '12px' }} fontWeight={700} color="#991b1b">⚠️ Overstaying by {overstayMins} minutes</Typography>
             <LinearProgress variant="determinate" value={Math.min(100, (overstayMins / 120) * 100)}
               sx={{ mt: 0.75, height: 5, borderRadius: 3, bgcolor: '#fecaca', '& .MuiLinearProgress-bar': { bgcolor: '#ef4444' } }} />
           </Box>
         )}
         {remainMins !== null && (
-          <Box sx={{ mt: 2, p: 1.5, borderRadius: 1.5, bgcolor: remainMins < 15 ? '#fff7ed' : '#f0fdf4', border: `1.5px solid ${remainMins < 15 ? '#fb923c' : '#22c55e'}` }}>
-            <Typography fontSize={12} fontWeight={700} sx={{ color: remainMins < 15 ? '#c2410c' : '#15803d' }}>
+          <Box sx={{ mt: 2, p: { xs: 1, sm: 1.5 }, borderRadius: 1.5, bgcolor: remainMins < 15 ? '#fff7ed' : '#f0fdf4', border: `1.5px solid ${remainMins < 15 ? '#fb923c' : '#22c55e'}` }}>
+            <Typography fontSize={{ xs: '11px', sm: '12px' }} fontWeight={700} sx={{ color: remainMins < 15 ? '#c2410c' : '#15803d' }}>
               {remainMins < 15 ? `⏰ Only ${remainMins} minutes remaining` : `✅ ${remainMins} minutes remaining`}
             </Typography>
-            <Typography fontSize={11} sx={{ color: '#64748b', mt: 0.25 }}>Valid until {fmtDT(visitor.allowedUntil)}</Typography>
+            <Typography fontSize={{ xs: '10px', sm: '11px' }} sx={{ color: '#64748b', mt: 0.25 }}>Valid until {fmtDT(visitor.allowedUntil)}</Typography>
           </Box>
         )}
       </DialogContent>
-      <DialogActions sx={{ p: 2, borderTop: `1.5px solid ${t.border}`, bgcolor: t.surface }}>
-        <Button onClick={onClose} sx={{ fontWeight: 700, color: t.textSecondary }}>Close</Button>
+      <DialogActions sx={{ p: { xs: 1.5, sm: 2 }, borderTop: `1.5px solid ${t.border}`, bgcolor: t.surface }}>
+        <Button onClick={onClose} sx={{ fontWeight: 700, color: t.textSecondary, fontSize: { xs: '11px', sm: '12px' } }}>Close</Button>
       </DialogActions>
     </Dialog>
   );
@@ -725,24 +789,49 @@ function WalkInDialog({ open, onClose, onCheckIn, t }) {
   const handleClose = () => { setVisitorId(''); setFound(null); setErr(''); onClose(); };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3, bgcolor: t.bg } }}>
-      <DialogTitle sx={{ fontWeight: 800, color: t.text, borderBottom: `1px solid ${t.border}` }}>
+    <Dialog 
+      open={open} 
+      onClose={handleClose} 
+      maxWidth="xs" 
+      fullWidth 
+      PaperProps={{ sx: { 
+        borderRadius: { xs: 2, md: 3 }, 
+        bgcolor: t.bg,
+        margin: { xs: 1, sm: 2 }
+      } }}
+    >
+      <DialogTitle sx={{ 
+        fontWeight: 800, color: t.text, borderBottom: `1px solid ${t.border}`,
+        px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 }
+      }}>
         <Stack direction="row" spacing={1} alignItems="center">
-          <LoginIcon sx={{ color: t.inside }} />
-          <span>Manual Walk-in Check-in</span>
+          <LoginIcon sx={{ color: t.inside, fontSize: { xs: 18, sm: 20 } }} />
+          <Typography fontSize={{ xs: 14, sm: 15 }} fontWeight={800}>Manual Walk-in Check-in</Typography>
         </Stack>
       </DialogTitle>
-      <DialogContent sx={{ pt: 3, bgcolor: t.bg }}>
-        <Typography fontSize={13} sx={{ color: t.textSecondary, mb: 2 }}>
+      <DialogContent sx={{ pt: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3 }, bgcolor: t.bg }}>
+        <Typography fontSize={{ xs: 12, sm: 13 }} sx={{ color: t.textSecondary, mb: 2 }}>
           For visitors without a QR code. Enter their Visitor ID or booking ID.
         </Typography>
-        <Stack direction="row" spacing={1} mb={2}>
-          <TextField fullWidth size="small" label="Visitor ID" placeholder="VIS-XXXXX or booking ID"
-            value={visitorId} onChange={e => setVisitorId(e.target.value.toUpperCase())}
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} mb={2}>
+          <TextField 
+            fullWidth 
+            size="small" 
+            label="Visitor ID" 
+            placeholder="VIS-XXXXX or booking ID"
+            value={visitorId} 
+            onChange={e => setVisitorId(e.target.value.toUpperCase())}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            InputProps={{ sx: { fontFamily: 'monospace' } }} />
-          <Button variant="contained" onClick={handleSearch} disabled={searching || !visitorId.trim()}
-            sx={{ bgcolor: t.inside, color: '#fff', minWidth: 90, fontWeight: 700 }}>
+            InputProps={{ sx: { fontFamily: 'monospace', fontSize: { xs: '12px', sm: '13px' } } }} 
+          />
+          <Button 
+            variant="contained" 
+            onClick={handleSearch} 
+            disabled={searching || !visitorId.trim()}
+            sx={{ 
+              bgcolor: t.inside, color: '#fff', minWidth: { xs: '100%', sm: 90 }, 
+              fontWeight: 700, fontSize: { xs: '11px', sm: '12px' }
+            }}>
             {searching ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : 'Search'}
           </Button>
         </Stack>
@@ -750,35 +839,51 @@ function WalkInDialog({ open, onClose, onCheckIn, t }) {
         {err && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setErr('')}>{err}</Alert>}
 
         {found && (
-          <Box sx={{ p: 2, borderRadius: 2, bgcolor: t.surface, border: `2px solid ${t.approved}`, mb: 1 }}>
-            <Stack direction="row" spacing={1.5} alignItems="center" mb={1.5}>
-              <Avatar sx={{ bgcolor: t.approved, color: '#fff', width: 40, height: 40, fontWeight: 700 }}>
+          <Box sx={{ 
+            p: { xs: 1.5, sm: 2 }, borderRadius: 2, bgcolor: t.surface, 
+            border: `2px solid ${t.approved}`, mb: 1 
+          }}>
+            <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="center" mb={{ xs: 1, sm: 1.5 }}>
+              <Avatar sx={{ 
+                bgcolor: t.approved, color: '#fff', width: { xs: 32, sm: 40 }, 
+                height: { xs: 32, sm: 40 }, fontWeight: 700, fontSize: { xs: 12, sm: 14 }
+              }}>
                 {found.name?.[0]?.toUpperCase()}
               </Avatar>
-              <Box>
-                <Typography fontWeight={800} fontSize={14} sx={{ color: t.text }}>{found.name}</Typography>
-                <Typography fontSize={11} sx={{ color: t.textSecondary }}>{found.visitorId}</Typography>
+              <Box minWidth={0}>
+                <Typography fontWeight={800} fontSize={{ xs: 12, sm: 14 }} sx={{ color: t.text, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {found.name}
+                </Typography>
+                <Typography fontSize={{ xs: 10, sm: 11 }} sx={{ color: t.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {found.visitorId}
+                </Typography>
               </Box>
             </Stack>
             <Divider sx={{ mb: 1.5 }} />
             {[['Phone', found.phone], ['Host', found.host], ['Gate', `Gate ${found.gate}`],
               ['Purpose', found.purpose], ['Approved for', `${found.expectedDuration || 120} min`]].map(([l, v]) => v ? (
-              <Stack key={l} direction="row" justifyContent="space-between" sx={{ py: 0.25 }}>
-                <Typography fontSize={12} sx={{ color: t.textSecondary }}>{l}</Typography>
-                <Typography fontSize={12} fontWeight={600} sx={{ color: t.text }}>{v}</Typography>
+              <Stack key={l} direction="row" justifyContent="space-between" sx={{ py: { xs: 0.25, sm: 0.5 } }}>
+                <Typography fontSize={{ xs: 11, sm: 12 }} sx={{ color: t.textSecondary }}>{l}</Typography>
+                <Typography fontSize={{ xs: 11, sm: 12 }} fontWeight={600} sx={{ color: t.text }}>{v}</Typography>
               </Stack>
             ) : null)}
-            <Alert severity="success" sx={{ mt: 1.5, py: 0.5 }}>
-              <Typography fontSize={12}>Ready to check in</Typography>
+            <Alert severity="success" sx={{ mt: { xs: 1, sm: 1.5 }, py: { xs: 0.4, sm: 0.5 } }}>
+              <Typography fontSize={{ xs: 11, sm: 12 }}>Ready to check in</Typography>
             </Alert>
           </Box>
         )}
       </DialogContent>
-      <DialogActions sx={{ p: 2, borderTop: `1px solid ${t.border}`, bgcolor: t.surface }}>
-        <Button onClick={handleClose} sx={{ color: t.textSecondary }}>Cancel</Button>
+      <DialogActions sx={{ p: { xs: 1.5, sm: 2 }, borderTop: `1px solid ${t.border}`, bgcolor: t.surface }}>
+        <Button onClick={handleClose} sx={{ color: t.textSecondary, fontWeight: 700, fontSize: { xs: '11px', sm: '12px' } }}>Cancel</Button>
         {found && (
-          <Button variant="contained" onClick={handleCheckIn} disabled={checkinLoading}
-            sx={{ bgcolor: t.success, color: '#fff', fontWeight: 700 }}>
+          <Button 
+            variant="contained" 
+            onClick={handleCheckIn} 
+            disabled={checkinLoading}
+            sx={{ 
+              bgcolor: t.success, color: '#fff', fontWeight: 700, 
+              fontSize: { xs: '11px', sm: '12px' }
+            }}>
             {checkinLoading ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : 'Confirm Check-in'}
           </Button>
         )}
@@ -813,27 +918,48 @@ function ShiftSummaryCard({ visitors, t, shiftStartTime }) {
 
   return (
     <>
-      <Button startIcon={<AssessmentIcon />} variant="outlined" size="small" onClick={() => setShow(true)}
-        sx={{ border: `2px solid ${t.border}`, color: t.text, fontWeight: 700, fontSize: '12px' }}>
+      <Button 
+        startIcon={<AssessmentIcon />} 
+        variant="outlined" 
+        size="small" 
+        onClick={() => setShow(true)}
+        sx={{ 
+          border: `2px solid ${t.border}`, color: t.text, fontWeight: 700, 
+          fontSize: { xs: '11px', sm: '12px' }, whiteSpace: 'nowrap',
+          width: '100%'
+        }}>
         Shift Summary
       </Button>
 
-      <Dialog open={show} onClose={() => setShow(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3, bgcolor: t.bg } }}>
-        <DialogTitle sx={{ fontWeight: 800, color: t.text, borderBottom: `1px solid ${t.border}`, bgcolor: t.surface }}>
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <AssessmentIcon sx={{ color: shift.color }} />
-            <Box>
-              <Typography fontWeight={800} fontSize={16} sx={{ color: t.text }}>End-of-Shift Summary</Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <ShiftIcon sx={{ fontSize: 14, color: shift.color }} />
-                <Typography fontSize={12} sx={{ color: shift.color }}>{shift.label}</Typography>
-                <Typography fontSize={12} sx={{ color: t.textSecondary }}>· Last 8 hours</Typography>
+      <Dialog 
+        open={show} 
+        onClose={() => setShow(false)} 
+        maxWidth="sm" 
+        fullWidth 
+        PaperProps={{ sx: { 
+          borderRadius: { xs: 2, md: 3 }, 
+          bgcolor: t.bg,
+          margin: { xs: 1, sm: 2 }
+        } }}
+      >
+        <DialogTitle sx={{ 
+          fontWeight: 800, color: t.text, borderBottom: `1px solid ${t.border}`, 
+          bgcolor: t.surface, px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 }
+        }}>
+          <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="flex-start">
+            <AssessmentIcon sx={{ color: shift.color, fontSize: { xs: 18, sm: 20 }, flexShrink: 0, mt: 0.25 }} />
+            <Box minWidth={0}>
+              <Typography fontWeight={800} fontSize={{ xs: 14, sm: 16 }} sx={{ color: t.text }}>End-of-Shift Summary</Typography>
+              <Stack direction="row" spacing={1} alignItems="center" mt={0.5} flexWrap="wrap">
+                <ShiftIcon sx={{ fontSize: { xs: 12, sm: 14 }, color: shift.color }} />
+                <Typography fontSize={{ xs: '10px', sm: '11px' }} sx={{ color: shift.color }}>{shift.label}</Typography>
+                <Typography fontSize={{ xs: '10px', sm: '11px' }} sx={{ color: t.textSecondary }}>· Last 8 hours</Typography>
               </Stack>
             </Box>
           </Stack>
         </DialogTitle>
-        <DialogContent sx={{ pt: 3, bgcolor: t.bg }}>
-          <Grid container spacing={2} mb={2}>
+        <DialogContent sx={{ pt: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3 }, bgcolor: t.bg }}>
+          <Grid container spacing={{ xs: 1, sm: 2 }} mb={2}>
             {[
               { label: 'Total Bookings',   value: summary.total,       color: '#3b82f6' },
               { label: 'Checked In',       value: summary.checkedIn,   color: '#10b981' },
@@ -843,32 +969,44 @@ function ShiftSummaryCard({ visitors, t, shiftStartTime }) {
               { label: 'Avg Duration',     value: summary.avgDuration ? `${summary.avgDuration}m` : '—', color: '#8b5cf6' },
             ].map(c => (
               <Grid item xs={6} sm={4} key={c.label}>
-                <Box sx={{ p: 2, borderRadius: 2, bgcolor: `${c.color}10`, border: `1.5px solid ${c.color}25`, textAlign: 'center' }}>
-                  <Typography sx={{ fontSize: '28px', fontWeight: 900, color: c.color }}>{c.value}</Typography>
-                  <Typography sx={{ fontSize: '11px', color: t.textSecondary, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{c.label}</Typography>
+                <Box sx={{ 
+                  p: { xs: 1, sm: 2 }, borderRadius: 2, bgcolor: `${c.color}10`, 
+                  border: `1.5px solid ${c.color}25`, textAlign: 'center' 
+                }}>
+                  <Typography sx={{ 
+                    fontSize: { xs: '20px', sm: '24px', md: '28px' }, 
+                    fontWeight: 900, color: c.color 
+                  }}>{c.value}</Typography>
+                  <Typography sx={{ 
+                    fontSize: { xs: '10px', sm: '11px' }, 
+                    color: t.textSecondary, fontWeight: 600, textTransform: 'uppercase', 
+                    letterSpacing: '0.5px', mt: 0.5, lineHeight: 1.2
+                  }}>{c.label}</Typography>
                 </Box>
               </Grid>
             ))}
           </Grid>
 
-          <Box sx={{ p: 2, borderRadius: 2, bgcolor: t.surface, border: `1px solid ${t.border}` }}>
-            <Typography fontWeight={700} fontSize={13} sx={{ color: t.text, mb: 1.5 }}>Summary Details</Typography>
+          <Box sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 2, bgcolor: t.surface, border: `1px solid ${t.border}` }}>
+            <Typography fontWeight={700} fontSize={{ xs: 12, sm: 13 }} sx={{ color: t.text, mb: { xs: 1, sm: 1.5 } }}>Summary Details</Typography>
             {[['Peak check-in hour', summary.peakHour], ['Avg visit duration', summary.avgDuration ? `${summary.avgDuration} minutes` : 'No data'], ['Overstay rate', summary.checkedIn > 0 ? `${Math.round((summary.overstays / summary.checkedIn) * 100)}%` : '0%'], ['Completion rate', summary.checkedIn > 0 ? `${Math.round((summary.checkedOut / summary.checkedIn) * 100)}%` : '0%']].map(([l, v]) => (
-              <Stack key={l} direction="row" justifyContent="space-between" sx={{ py: 0.5, borderBottom: `1px solid ${t.border}` }}>
-                <Typography fontSize={13} sx={{ color: t.textSecondary }}>{l}</Typography>
-                <Typography fontSize={13} fontWeight={700} sx={{ color: t.text }}>{v}</Typography>
+              <Stack key={l} direction="row" justifyContent="space-between" sx={{ py: { xs: 0.25, sm: 0.5 }, borderBottom: `1px solid ${t.border}` }}>
+                <Typography fontSize={{ xs: '11px', sm: '13px' }} sx={{ color: t.textSecondary }}>{l}</Typography>
+                <Typography fontSize={{ xs: '11px', sm: '13px' }} fontWeight={700} sx={{ color: t.text }}>{v}</Typography>
               </Stack>
             ))}
           </Box>
 
           {summary.stillInside > 0 && (
-            <Alert severity="warning" sx={{ mt: 2 }}>
-              <Typography fontSize={12} fontWeight={600}>{summary.stillInside} visitor(s) still inside campus — ensure they check out before shift end.</Typography>
+            <Alert severity="warning" sx={{ mt: 2, fontSize: { xs: '11px', sm: '12px' } }}>
+              <Typography fontSize={{ xs: '11px', sm: '12px' }} fontWeight={600}>
+                {summary.stillInside} visitor(s) still inside campus — ensure they check out before shift end.
+              </Typography>
             </Alert>
           )}
         </DialogContent>
-        <DialogActions sx={{ p: 2, borderTop: `1px solid ${t.border}`, bgcolor: t.surface }}>
-          <Button onClick={() => setShow(false)} sx={{ fontWeight: 700 }}>Close</Button>
+        <DialogActions sx={{ p: { xs: 1.5, sm: 2 }, borderTop: `1px solid ${t.border}`, bgcolor: t.surface }}>
+          <Button onClick={() => setShow(false)} sx={{ fontWeight: 700, fontSize: { xs: '11px', sm: '12px' } }}>Close</Button>
         </DialogActions>
       </Dialog>
     </>
@@ -879,20 +1017,31 @@ function ShiftSummaryCard({ visitors, t, shiftStartTime }) {
 function StatCard({ label, value, icon: Icon, color, t, pulse }) {
   return (
     <Paper sx={{
-      p: 2.5, position: 'relative', overflow: 'hidden',
+      p: { xs: 1.5, sm: 2, md: 2.5 }, position: 'relative', overflow: 'hidden',
       background: `${color}08`, border: `2px solid ${color}25`, borderRadius: 2.5,
-      transition: 'all 0.3s ease',
+      transition: 'all 0.3s ease', minHeight: { xs: 100, sm: 120, md: 140 },
       animation: pulse ? 'pulseCard 1.5s ease-in-out infinite' : 'none',
       '&:hover': { boxShadow: `0 16px 32px ${color}20`, transform: 'translateY(-4px)' },
       '@keyframes pulseCard': { '0%,100%': { borderColor: `${color}25` }, '50%': { borderColor: color, boxShadow: `0 0 0 3px ${color}20` } },
     }}>
       <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
         <Box>
-          <Typography sx={{ fontSize: '11px', fontWeight: 700, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '1px', mb: 1 }}>{label}</Typography>
-          <Typography sx={{ fontSize: '38px', fontWeight: 900, color: t.text, letterSpacing: '-1px' }}>{value}</Typography>
+          <Typography sx={{ 
+            fontSize: { xs: '10px', sm: '11px', md: '12px' }, 
+            fontWeight: 700, color: t.textSecondary, textTransform: 'uppercase', 
+            letterSpacing: '1px', mb: { xs: 0.75, sm: 1 } 
+          }}>{label}</Typography>
+          <Typography sx={{ 
+            fontSize: { xs: '24px', sm: '32px', md: '38px' }, 
+            fontWeight: 900, color: t.text, letterSpacing: '-1px' 
+          }}>{value}</Typography>
         </Box>
-        {Icon && <Box sx={{ p: 1.5, borderRadius: 2, background: `${color}18`, border: `2px solid ${color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon sx={{ fontSize: 26, color }} />
+        {Icon && <Box sx={{ 
+          p: { xs: 1, sm: 1.5 }, borderRadius: 2, background: `${color}18`, 
+          border: `2px solid ${color}25`, display: 'flex', alignItems: 'center', 
+          justifyContent: 'center', flexShrink: 0 
+        }}>
+          <Icon sx={{ fontSize: { xs: 20, sm: 22, md: 26 }, color }} />
         </Box>}
       </Stack>
     </Paper>
@@ -921,62 +1070,86 @@ function VisitorCard({ visitor, onCheckIn, onCheckOut, onViewTimeline, refreshin
       transition: 'all 0.25s ease', cursor: 'pointer',
       '&:hover': { transform: 'translateY(-4px)', boxShadow: `0 16px 32px ${cfg.color}25` },
     }} onClick={() => onViewTimeline(visitor)}>
-      <CardContent sx={{ p: 2 }}>
-        <Stack direction="row" spacing={1.5} alignItems="flex-start" mb={1.5}>
-          <Avatar sx={{ bgcolor: cfg.color, width: 40, height: 40, fontSize: 15, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+      <CardContent sx={{ p: { xs: 1.25, sm: 1.5, md: 2 } }}>
+        <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="flex-start" mb={{ xs: 1, sm: 1.5 }}>
+          <Avatar sx={{ 
+            bgcolor: cfg.color, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 }, 
+            fontSize: { xs: 12, sm: 14 }, fontWeight: 800, color: '#fff', flexShrink: 0 
+          }}>
             {visitor.name?.[0]?.toUpperCase() || 'V'}
           </Avatar>
           <Box flex={1} minWidth={0}>
-            <Typography fontWeight={800} fontSize={13} noWrap sx={{ color: t.text }}>{visitor.name}</Typography>
-            <Typography fontSize={10} sx={{ color: t.textSecondary }} noWrap>{visitor.visitorId}</Typography>
+            <Typography fontWeight={800} fontSize={{ xs: 12, sm: 13 }} noWrap sx={{ color: t.text }}>
+              {visitor.name}
+            </Typography>
+            <Typography fontSize={{ xs: 9, sm: 10 }} sx={{ color: t.textSecondary }} noWrap>
+              {visitor.visitorId}
+            </Typography>
           </Box>
-          <Chip label={cfg.label} size="small" sx={{ bgcolor: cfg.color, color: '#fff', fontWeight: 800, fontSize: '10px', height: 20 }} />
+          <Chip 
+            label={cfg.label} 
+            size="small" 
+            sx={{ 
+              bgcolor: cfg.color, color: '#fff', fontWeight: 800, 
+              fontSize: { xs: '9px', sm: '10px' }, height: { xs: 18, sm: 20 },
+              flexShrink: 0
+            }} 
+          />
         </Stack>
 
-        <Divider sx={{ mb: 1.5, borderColor: t.border }} />
+        <Divider sx={{ mb: { xs: 1, sm: 1.5 }, borderColor: t.border }} />
 
-        <Stack spacing={0.75} mb={1.5}>
-          {visitor.phone && <Stack direction="row" spacing={1} alignItems="center"><PhoneIcon sx={{ fontSize: 13, color: t.textSecondary }} /><Typography fontSize={12} sx={{ color: t.textSecondary }}>{visitor.phone}</Typography></Stack>}
-          {visitor.company && <Stack direction="row" spacing={1} alignItems="center"><BusinessIcon sx={{ fontSize: 13, color: t.textSecondary }} /><Typography fontSize={12} sx={{ color: t.textSecondary }} noWrap>{visitor.company}</Typography></Stack>}
-          {visitor.gate && <Stack direction="row" spacing={1} alignItems="center"><SecurityIcon sx={{ fontSize: 13, color: t.textSecondary }} /><Typography fontSize={12} sx={{ color: t.textSecondary }}>Gate {visitor.gate}</Typography></Stack>}
-          {visitor.host && <Stack direction="row" spacing={1} alignItems="center"><PersonIcon sx={{ fontSize: 13, color: t.textSecondary }} /><Typography fontSize={12} sx={{ color: t.textSecondary }} noWrap>→ {visitor.host}</Typography></Stack>}
-          {visitor.checkInTime && <Stack direction="row" spacing={1} alignItems="center"><ScheduleIcon sx={{ fontSize: 13, color: cfg.color }} /><Typography fontSize={12} fontWeight={700} sx={{ color: cfg.color }}>In: {fmtTime(visitor.checkInTime)}</Typography></Stack>}
+        <Stack spacing={{ xs: 0.5, sm: 0.75 }} mb={{ xs: 1, sm: 1.5 }}>
+          {visitor.phone && <Stack direction="row" spacing={1} alignItems="center"><PhoneIcon sx={{ fontSize: { xs: 11, sm: 13 }, color: t.textSecondary }} /><Typography fontSize={{ xs: 11, sm: 12 }} sx={{ color: t.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{visitor.phone}</Typography></Stack>}
+          {visitor.company && <Stack direction="row" spacing={1} alignItems="center"><BusinessIcon sx={{ fontSize: { xs: 11, sm: 13 }, color: t.textSecondary }} /><Typography fontSize={{ xs: 11, sm: 12 }} sx={{ color: t.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{visitor.company}</Typography></Stack>}
+          {visitor.gate && <Stack direction="row" spacing={1} alignItems="center"><SecurityIcon sx={{ fontSize: { xs: 11, sm: 13 }, color: t.textSecondary }} /><Typography fontSize={{ xs: 11, sm: 12 }} sx={{ color: t.textSecondary }}>Gate {visitor.gate}</Typography></Stack>}
+          {visitor.host && <Stack direction="row" spacing={1} alignItems="center"><PersonIcon sx={{ fontSize: { xs: 11, sm: 13 }, color: t.textSecondary }} /><Typography fontSize={{ xs: 11, sm: 12 }} sx={{ color: t.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>→ {visitor.host}</Typography></Stack>}
+          {visitor.checkInTime && <Stack direction="row" spacing={1} alignItems="center"><ScheduleIcon sx={{ fontSize: { xs: 11, sm: 13 }, color: cfg.color }} /><Typography fontSize={{ xs: 11, sm: 12 }} fontWeight={700} sx={{ color: cfg.color }}>In: {fmtTime(visitor.checkInTime)}</Typography></Stack>}
         </Stack>
 
         {visitor.status === 'OVERSTAY' && overstayMins > 0 && (
-          <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: `${t.overstay}12`, border: `1.5px solid ${t.overstay}`, mb: 1.5 }}>
-            <Typography fontSize={11} fontWeight={800} sx={{ color: t.overstay }}>⚠️ OVERSTAY — {overstayMins} min</Typography>
+          <Box sx={{ p: { xs: 0.75, sm: 1 }, borderRadius: 1.5, bgcolor: `${t.overstay}12`, border: `1.5px solid ${t.overstay}`, mb: { xs: 1, sm: 1.5 } }}>
+            <Typography fontSize={{ xs: 10, sm: 11 }} fontWeight={800} sx={{ color: t.overstay }}>⚠️ OVERSTAY — {overstayMins} min</Typography>
             <LinearProgress variant="determinate" value={Math.min(100, (overstayMins / 120) * 100)}
               sx={{ mt: 0.5, height: 4, borderRadius: 2, bgcolor: `${t.overstay}20`, '& .MuiLinearProgress-bar': { bgcolor: t.overstay } }} />
           </Box>
         )}
 
         {remainMins !== null && (
-          <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: remainMins < 15 ? `${t.warning}12` : `${t.inside}12`, border: `1px solid ${remainMins < 15 ? t.warning : t.inside}`, mb: 1.5 }}>
-            <Typography fontSize={11} fontWeight={700} sx={{ color: remainMins < 15 ? t.warning : t.inside }}>
+          <Box sx={{ p: { xs: 0.75, sm: 1 }, borderRadius: 1.5, bgcolor: remainMins < 15 ? `${t.warning}12` : `${t.inside}12`, border: `1px solid ${remainMins < 15 ? t.warning : t.inside}`, mb: { xs: 1, sm: 1.5 } }}>
+            <Typography fontSize={{ xs: 10, sm: 11 }} fontWeight={700} sx={{ color: remainMins < 15 ? t.warning : t.inside }}>
               {remainMins < 15 ? `⏰ ${remainMins}m left` : `✅ ${remainMins}m remaining`}
             </Typography>
           </Box>
         )}
 
         {/* Action buttons — stop card click propagation */}
-        <Stack direction="row" spacing={0.75} onClick={e => e.stopPropagation()}>
+        <Stack direction="row" spacing={0.5} onClick={e => e.stopPropagation()}>
           {visitor.status === 'APPROVED' && (
             <Button fullWidth variant="contained" size="small" onClick={() => onCheckIn(visitor._id)}
-              disabled={refreshing} sx={{ bgcolor: t.inside, color: '#fff', fontWeight: 800, fontSize: '11px', py: 0.5 }}>
+              disabled={refreshing} sx={{ 
+                bgcolor: t.inside, color: '#fff', fontWeight: 800, 
+                fontSize: { xs: '10px', sm: '11px' }, py: { xs: 0.4, sm: 0.5 }
+              }}>
               Check In
             </Button>
           )}
           {(visitor.status === 'IN' || visitor.status === 'OVERSTAY') && (
             <Button fullWidth variant="contained" size="small" onClick={() => onCheckOut(visitor._id)}
-              disabled={refreshing} sx={{ bgcolor: visitor.status === 'OVERSTAY' ? t.overstay : t.success, color: '#fff', fontWeight: 800, fontSize: '11px', py: 0.5 }}>
+              disabled={refreshing} sx={{ 
+                bgcolor: visitor.status === 'OVERSTAY' ? t.overstay : t.success, color: '#fff', 
+                fontWeight: 800, fontSize: { xs: '10px', sm: '11px' }, py: { xs: 0.4, sm: 0.5 }
+              }}>
               Check Out
             </Button>
           )}
           <Tooltip title="View timeline">
             <IconButton size="small" onClick={() => onViewTimeline(visitor)}
-              sx={{ border: `1.5px solid ${cfg.color}`, color: cfg.color, width: 30, height: 30 }}>
-              <TimelineIcon sx={{ fontSize: 14 }} />
+              sx={{ 
+                border: `1.5px solid ${cfg.color}`, color: cfg.color, 
+                width: { xs: 28, sm: 30 }, height: { xs: 28, sm: 30 }
+              }}>
+              <TimelineIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />
             </IconButton>
           </Tooltip>
         </Stack>
@@ -1152,47 +1325,63 @@ export default function SecurityDashboard() {
 
       {/* HEADER */}
       <Box sx={{ bgcolor: t.bg, borderBottom: `2px solid ${t.border}`, position: 'sticky', top: 0, zIndex: 100 }}>
-        <Container maxWidth="xl">
-          <Stack direction="row" justifyContent="space-between" alignItems="center" py={2}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Box sx={{ p: 1.5, borderRadius: 2, background: `${t.critical}18`, border: `1.5px solid ${t.critical}30` }}>
-                <SecurityIcon sx={{ fontSize: 28, color: t.critical }} />
+        <Container maxWidth="xl" disableGutters>
+          <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} 
+            py={{ xs: 1.5, sm: 2 }} px={{ xs: 1.5, sm: 2, md: 3 }} spacing={{ xs: 1.5, sm: 2 }}>
+            <Stack direction="row" spacing={{ xs: 1.5, sm: 2 }} alignItems="flex-start" width={{ xs: '100%', sm: 'auto' }}>
+              <Box sx={{ p: { xs: 1, sm: 1.5 }, borderRadius: 2, background: `${t.critical}18`, border: `1.5px solid ${t.critical}30`, flexShrink: 0 }}>
+                <SecurityIcon sx={{ fontSize: { xs: 20, sm: 24, md: 28 }, color: t.critical }} />
               </Box>
-              <Box>
-                <Typography variant="h6" fontWeight={900} sx={{ color: t.text, letterSpacing: '-0.3px' }}>
+              <Box flex={{ xs: 1, sm: 'auto' }} minWidth={0}>
+                <Typography variant="h6" fontWeight={900} sx={{ 
+                  fontSize: { xs: '14px', sm: '16px', md: '18px' }, 
+                  color: t.text, letterSpacing: '-0.3px', lineHeight: 1.2 
+                }}>
                   SECURITY COMMAND CENTER
                 </Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: socket?.connected ? '#22c55e' : '#6b7280' }} />
-                  <Typography fontSize={11} sx={{ color: t.textSecondary, fontWeight: 600 }}>
+                <Stack direction="row" spacing={{ xs: 0.75, sm: 1 }} alignItems="center" mt={0.5} flexWrap="wrap">
+                  <Box sx={{ width: { xs: 5, sm: 7 }, height: { xs: 5, sm: 7 }, borderRadius: '50%', bgcolor: socket?.connected ? '#22c55e' : '#6b7280' }} />
+                  <Typography fontSize={{ xs: 10, sm: 11 }} sx={{ color: t.textSecondary, fontWeight: 600 }}>
                     {socket?.connected ? 'LIVE' : 'OFFLINE'}
                   </Typography>
-                  {user?.gateId && <Chip label={`Gate ${user.gateId}`} size="small" sx={{ height: 18, fontSize: '10px', fontWeight: 700, bgcolor: `${t.inside}18`, color: t.inside }} />}
+                  {user?.gateId && <Chip label={`Gate ${user.gateId}`} size="small" sx={{ 
+                    height: { xs: 16, sm: 18 }, fontSize: { xs: '9px', sm: '10px' }, 
+                    fontWeight: 700, bgcolor: `${t.inside}18`, color: t.inside 
+                  }} />}
                 </Stack>
               </Box>
             </Stack>
 
-            <Stack direction="row" spacing={1.5} alignItems="center">
+            <Stack direction="row" spacing={{ xs: 0.75, sm: 1 }} alignItems="center" justifyContent={{ xs: 'space-between', sm: 'flex-end' }} width={{ xs: '100%', sm: 'auto' }}>
               {/* NEW: Live clock + shift indicator */}
               <LiveClock t={t} />
 
               <Tooltip title="Notifications">
-                <IconButton onClick={() => setNotifDrawer(true)} sx={{ color: t.text, border: `2px solid ${t.border}`, borderRadius: 1.5 }}>
+                <IconButton onClick={() => setNotifDrawer(true)} sx={{ 
+                  color: t.text, border: `2px solid ${t.border}`, borderRadius: 1.5,
+                  width: { xs: 36, sm: 40 }, height: { xs: 36, sm: 40 }
+                }}>
                   <Badge badgeContent={notifications.filter(n => n.type === 'warning' || n.type === 'error').length} color="error">
-                    <NotificationsIcon />
+                    <NotificationsIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                   </Badge>
                 </IconButton>
               </Tooltip>
 
               <Tooltip title="Settings">
-                <IconButton onClick={() => setSettingsOpen(true)} sx={{ color: t.text, border: `2px solid ${t.border}`, borderRadius: 1.5 }}>
-                  <SettingsIcon />
+                <IconButton onClick={() => setSettingsOpen(true)} sx={{ 
+                  color: t.text, border: `2px solid ${t.border}`, borderRadius: 1.5,
+                  width: { xs: 36, sm: 40 }, height: { xs: 36, sm: 40 }
+                }}>
+                  <SettingsIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                 </IconButton>
               </Tooltip>
 
               <Tooltip title="Logout">
-                <IconButton onClick={logoutUser} sx={{ color: t.critical, border: `2px solid ${t.critical}30`, borderRadius: 1.5 }}>
-                  <LogoutIcon />
+                <IconButton onClick={logoutUser} sx={{ 
+                  color: t.critical, border: `2px solid ${t.critical}30`, borderRadius: 1.5,
+                  width: { xs: 36, sm: 40 }, height: { xs: 36, sm: 40 }
+                }}>
+                  <LogoutIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                 </IconButton>
               </Tooltip>
             </Stack>
@@ -1200,94 +1389,151 @@ export default function SecurityDashboard() {
         </Container>
       </Box>
 
-      <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Container maxWidth="xl" disableGutters sx={{ px: { xs: 1.5, sm: 2, md: 3 }, py: { xs: 1.5, sm: 2, md: 3 } }}>
 
         {/* STAT CARDS */}
-        <Grid container spacing={2} mb={3}>
+        <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} mb={{ xs: 2, sm: 3 }}>
           {[
             { label: 'Approved', value: stats.approved, icon: CheckCircleIcon, color: t.approved },
             { label: 'Inside Campus', value: stats.inside, icon: PersonIcon, color: t.inside },
             { label: 'Overstay Alert', value: stats.overstay, icon: WarningIcon, color: t.critical, pulse: stats.overstay > 0 },
             { label: 'Completed', value: stats.completed, icon: DoneIcon, color: t.success },
           ].map(s => (
-            <Grid item xs={6} md={3} key={s.label}>
+            <Grid item xs={6} sm={6} md={3} key={s.label}>
               <StatCard {...s} t={t} />
             </Grid>
           ))}
         </Grid>
 
-        {error && <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>{error}</Alert>}
+        {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
         {stats.overstay > 0 && (
-          <Alert severity="error" sx={{ mb: 3, fontWeight: 700, border: `2px solid ${t.critical}` }}>
+          <Alert severity="error" sx={{ mb: 2, fontWeight: 700, border: `2px solid ${t.critical}` }}>
             🚨 {stats.overstay} visitor(s) are overstaying! Action required immediately.
           </Alert>
         )}
 
         {/* ACTION TOOLBAR */}
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} mb={3} alignItems={{ sm: 'center' }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 1.5 }} mb={{ xs: 2, sm: 3 }} alignItems={{ xs: 'stretch', sm: 'center' }}>
           {/* Search */}
-          <Paper elevation={0} sx={{ flex: 1, p: 0, borderRadius: 2, border: `2px solid ${t.border}`, bgcolor: t.bg }}>
-            <Stack direction="row" spacing={1.5} alignItems="center" px={2} py={1.25}>
-              <SearchIcon sx={{ color: t.textSecondary, fontSize: 18 }} />
-              <TextField fullWidth placeholder="Search name, visitor ID, phone…" size="small" value={search}
-                onChange={e => setSearch(e.target.value)} variant="standard" InputProps={{ disableUnderline: true, sx: { fontSize: '13px', color: t.text } }} />
+          <Paper elevation={0} sx={{ 
+            flex: 1, p: 0, borderRadius: 2, border: `2px solid ${t.border}`, 
+            bgcolor: t.bg, order: { xs: 2, sm: 1 }
+          }}>
+            <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="center" px={{ xs: 1.5, sm: 2 }} py={{ xs: 1, sm: 1.25 }}>
+              <SearchIcon sx={{ color: t.textSecondary, fontSize: { xs: 16, sm: 18 } }} />
+              <TextField 
+                fullWidth 
+                placeholder="Search name, ID, phone…" 
+                size="small" 
+                value={search}
+                onChange={e => setSearch(e.target.value)} 
+                variant="standard" 
+                InputProps={{ 
+                  disableUnderline: true, 
+                  sx: { fontSize: { xs: '12px', sm: '13px' }, color: t.text } 
+                }} 
+              />
             </Stack>
           </Paper>
 
           {/* Action buttons */}
-          <Stack direction="row" spacing={1}>
+          <Stack direction={{ xs: 'row', sm: 'row' }} spacing={{ xs: 0.75, sm: 1 }} order={{ xs: 1, sm: 2 }} sx={{ width: { xs: '100%', sm: 'auto' } }}>
             {/* NEW: Camera QR Scanner */}
             <Tooltip title="Scan QR Code">
-              <Button variant="contained" startIcon={<CameraAltIcon />} onClick={() => setQrScannerOpen(true)}
-                sx={{ bgcolor: t.inside, color: '#fff', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap' }}>
-                Scan QR
+              <Button 
+                variant="contained" 
+                startIcon={<CameraAltIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />} 
+                onClick={() => setQrScannerOpen(true)}
+                sx={{ 
+                  bgcolor: t.inside, color: '#fff', fontWeight: 700, 
+                  fontSize: { xs: '11px', sm: '12px' }, whiteSpace: 'nowrap',
+                  flex: { xs: 1, sm: 'auto' }, minWidth: { xs: '50px', sm: 'auto' }
+                }}>
+                <span style={{ display: { xs: 'none', sm: 'inline' } }}>Scan QR</span>
+                <span style={{ display: { xs: 'inline', sm: 'none' } }}>QR</span>
               </Button>
             </Tooltip>
 
             {/* NEW: Manual Walk-in */}
             <Tooltip title="Manual walk-in check-in">
-              <Button variant="outlined" startIcon={<LoginIcon />} onClick={() => setWalkInOpen(true)}
-                sx={{ border: `2px solid ${t.border}`, color: t.text, fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap' }}>
-                Walk-in
+              <Button 
+                variant="outlined" 
+                startIcon={<LoginIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />} 
+                onClick={() => setWalkInOpen(true)}
+                sx={{ 
+                  border: `2px solid ${t.border}`, color: t.text, fontWeight: 700, 
+                  fontSize: { xs: '11px', sm: '12px' }, whiteSpace: 'nowrap',
+                  flex: { xs: 1, sm: 'auto' }, minWidth: { xs: '50px', sm: 'auto' }
+                }}>
+                <span style={{ display: { xs: 'none', sm: 'inline' } }}>Walk-in</span>
+                <span style={{ display: { xs: 'inline', sm: 'none' } }}>Walk</span>
               </Button>
             </Tooltip>
 
             {/* NEW: Shift Summary */}
-            <ShiftSummaryCard visitors={visitors} t={t} shiftStartTime={shiftStart} />
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+              <ShiftSummaryCard visitors={visitors} t={t} shiftStartTime={shiftStart} />
+            </Box>
 
             <Tooltip title="Refresh">
               <span>
-                <IconButton onClick={loadData} disabled={loading || refreshing} sx={{ border: `2px solid ${t.border}`, color: t.text, borderRadius: 1.5 }}>
-                  <RefreshIcon />
+                <IconButton 
+                  onClick={loadData} 
+                  disabled={loading || refreshing} 
+                  sx={{ 
+                    border: `2px solid ${t.border}`, color: t.text, borderRadius: 1.5,
+                    width: { xs: 36, sm: 'auto' }, height: { xs: 36, sm: 'auto' }, p: { xs: 1, sm: 1.5 }
+                  }}>
+                  <RefreshIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                 </IconButton>
               </span>
             </Tooltip>
           </Stack>
+
+          {/* Mobile Shift Summary */}
+          <Box sx={{ display: { xs: 'block', sm: 'none' }, width: '100%', order: 3 }}>
+            <ShiftSummaryCard visitors={visitors} t={t} shiftStartTime={shiftStart} />
+          </Box>
         </Stack>
 
         {/* TABS */}
-        <Paper elevation={0} sx={{ mb: 3, borderRadius: 2, border: `2px solid ${t.border}`, bgcolor: t.bg, overflow: 'hidden' }}>
-          <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ '& .MuiTabs-indicator': { bgcolor: t.inside, height: 3 } }} variant="scrollable" scrollButtons="auto">
-            <Tab label={`All (${visitors.length})`} sx={{ color: t.textSecondary, fontWeight: 700, fontSize: '12px' }} />
-            <Tab label={`Approved (${stats.approved})`} sx={{ color: t.approved, fontWeight: 700, fontSize: '12px' }} />
-            <Tab label={`Inside (${stats.inside})`} sx={{ color: t.inside, fontWeight: 700, fontSize: '12px' }} />
-            <Tab label={`Overstay (${stats.overstay})`} sx={{ color: t.critical, fontWeight: 700, fontSize: '12px' }} />
-            <Tab label={`Completed (${stats.completed})`} sx={{ color: t.textSecondary, fontWeight: 700, fontSize: '12px' }} />
+        <Paper elevation={0} sx={{ 
+          mb: 2, borderRadius: 2, border: `2px solid ${t.border}`, 
+          bgcolor: t.bg, overflow: 'auto'
+        }}>
+          <Tabs 
+            value={tabValue} 
+            onChange={(_, v) => setTabValue(v)} 
+            sx={{ 
+              '& .MuiTabs-indicator': { bgcolor: t.inside, height: 3 },
+              '& .MuiTab-root': { fontSize: { xs: '11px', sm: '12px' }, minWidth: { xs: 70, sm: 'auto' } }
+            }} 
+            variant="scrollable" 
+            scrollButtons="auto">
+            <Tab label={`All (${visitors.length})`} sx={{ color: t.textSecondary, fontWeight: 700 }} />
+            <Tab label={`Approved (${stats.approved})`} sx={{ color: t.approved, fontWeight: 700 }} />
+            <Tab label={`Inside (${stats.inside})`} sx={{ color: t.inside, fontWeight: 700 }} />
+            <Tab label={`Overstay (${stats.overstay})`} sx={{ color: t.critical, fontWeight: 700 }} />
+            <Tab label={`Completed (${stats.completed})`} sx={{ color: t.textSecondary, fontWeight: 700 }} />
           </Tabs>
         </Paper>
 
         {/* VISITOR GRID */}
         {loading ? (
-          <Paper elevation={0} sx={{ p: 6, textAlign: 'center', borderRadius: 2, bgcolor: t.bg }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 4, sm: 6 }, textAlign: 'center', borderRadius: 2, bgcolor: t.bg 
+          }}>
             <CircularProgress sx={{ color: t.inside, mb: 2 }} />
             <Typography sx={{ color: t.textSecondary }}>Loading visitors…</Typography>
           </Paper>
         ) : filtered.length === 0 ? (
-          <Paper elevation={0} sx={{ p: 6, textAlign: 'center', borderRadius: 2, bgcolor: t.bg }}>
+          <Paper elevation={0} sx={{ 
+            p: { xs: 4, sm: 6 }, textAlign: 'center', borderRadius: 2, bgcolor: t.bg 
+          }}>
             <Typography sx={{ color: t.textSecondary }}>No visitors to display</Typography>
           </Paper>
         ) : (
-          <Grid container spacing={2}>
+          <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
             {filtered.map(v => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={v._id}>
                 <VisitorCard visitor={v} onCheckIn={handleCheckIn} onCheckOut={handleCheckOut}
@@ -1305,20 +1551,29 @@ export default function SecurityDashboard() {
 
       {/* ── NOTIFICATIONS DRAWER ── */}
       <Drawer anchor="right" open={notifDrawer} onClose={() => setNotifDrawer(false)}>
-        <Box p={3} width={{ xs: '100vw', sm: 380 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h6" fontWeight={800}>🔔 Notifications</Typography>
+        <Box 
+          p={{ xs: 2, sm: 3 }} 
+          width={{ xs: '100vw', sm: 380 }} 
+          sx={{ height: '100%', overflow: 'auto' }}
+        >
+          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2.5}>
+            <Typography variant="h6" fontWeight={800} fontSize={{ xs: 16, sm: 18 }}>🔔 Notifications</Typography>
             <IconButton size="small" onClick={() => setNotifDrawer(false)}><CloseIcon /></IconButton>
           </Stack>
-          <Stack spacing={1.5}>
+          <Stack spacing={1}>
             {notifications.length === 0 ? (
-              <Typography color="textSecondary" textAlign="center" py={4}>No notifications</Typography>
+              <Typography color="textSecondary" textAlign="center" py={4} fontSize={{ xs: 12, sm: 13 }}>
+                No notifications
+              </Typography>
             ) : notifications.map(n => (
-              <Card key={n.id} elevation={0} sx={{ border: `2px solid ${n.type === 'error' ? '#ef4444' : n.type === 'warning' ? '#f97316' : '#10b981'}20`, borderRadius: 1.5 }}>
-                <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-                  <Typography fontWeight={700} fontSize={13}>{n.title}</Typography>
-                  <Typography fontSize={12} color="textSecondary">{n.message}</Typography>
-                  <Typography fontSize={11} color="textSecondary" mt={0.5}>{fmtTime(n.createdAt)}</Typography>
+              <Card key={n.id} elevation={0} sx={{ 
+                border: `2px solid ${n.type === 'error' ? '#ef4444' : n.type === 'warning' ? '#f97316' : '#10b981'}20`, 
+                borderRadius: 1.5 
+              }}>
+                <CardContent sx={{ p: { xs: 1, sm: 1.5 }, '&:last-child': { pb: { xs: 1, sm: 1.5 } } }}>
+                  <Typography fontWeight={700} fontSize={{ xs: 12, sm: 13 }}>{n.title}</Typography>
+                  <Typography fontSize={{ xs: 11, sm: 12 }} color="textSecondary">{n.message}</Typography>
+                  <Typography fontSize={{ xs: 10, sm: 11 }} color="textSecondary" mt={0.5}>{fmtTime(n.createdAt)}</Typography>
                 </CardContent>
               </Card>
             ))}
@@ -1328,11 +1583,15 @@ export default function SecurityDashboard() {
 
       {/* ── SETTINGS DRAWER ── */}
       <Drawer anchor="right" open={settingsOpen} onClose={() => setSettingsOpen(false)}>
-        <Box p={3} width={{ xs: '100vw', sm: 340 }}>
-          <Typography variant="h6" fontWeight={800} mb={3}>⚙️ Settings</Typography>
+        <Box 
+          p={{ xs: 2, sm: 3 }} 
+          width={{ xs: '100vw', sm: 340 }} 
+          sx={{ height: '100%', overflow: 'auto' }}
+        >
+          <Typography variant="h6" fontWeight={800} mb={3} fontSize={{ xs: 16, sm: 18 }}>⚙️ Settings</Typography>
           <Stack spacing={3}>
             <Box>
-              <Typography fontWeight={700} fontSize={13} mb={1.5}>🎨 Theme</Typography>
+              <Typography fontWeight={700} fontSize={{ xs: 12, sm: 13 }} mb={1.5}>🎨 Theme</Typography>
               <Select fullWidth value={theme} onChange={e => setTheme(e.target.value)} size="small">
                 <MenuItem value="light">☀️ Light Mode</MenuItem>
                 <MenuItem value="dark">🌙 Dark Mode</MenuItem>
@@ -1341,16 +1600,27 @@ export default function SecurityDashboard() {
             </Box>
             <Divider />
             <Box>
-              <Typography fontWeight={700} fontSize={13} mb={0.5}>Gate Assignment</Typography>
-              <Typography fontSize={12} color="textSecondary">{user?.gateId ? `Assigned to Gate ${user.gateId}` : 'No gate assigned — showing all gates'}</Typography>
+              <Typography fontWeight={700} fontSize={{ xs: 12, sm: 13 }} mb={0.5}>Gate Assignment</Typography>
+              <Typography fontSize={{ xs: 11, sm: 12 }} color="textSecondary">
+                {user?.gateId ? `Assigned to Gate ${user.gateId}` : 'No gate assigned — showing all gates'}
+              </Typography>
             </Box>
             <Divider />
             <Box>
-              <Typography fontWeight={700} fontSize={13} mb={1.5}>Alerts</Typography>
-              <Stack spacing={1.5}>
-                <FormControlLabel control={<Switch defaultChecked />} label={<Typography fontSize={13}>Overstay detection (every 60s)</Typography>} />
-                <FormControlLabel control={<Switch defaultChecked />} label={<Typography fontSize={13}>Browser notifications</Typography>} />
-                <FormControlLabel control={<Switch defaultChecked />} label={<Typography fontSize={13}>Real-time socket updates</Typography>} />
+              <Typography fontWeight={700} fontSize={{ xs: 12, sm: 13 }} mb={1.5}>Alerts</Typography>
+              <Stack spacing={1}>
+                <FormControlLabel 
+                  control={<Switch defaultChecked />} 
+                  label={<Typography fontSize={{ xs: 12, sm: 13 }}>Overstay detection (every 60s)</Typography>} 
+                />
+                <FormControlLabel 
+                  control={<Switch defaultChecked />} 
+                  label={<Typography fontSize={{ xs: 12, sm: 13 }}>Browser notifications</Typography>} 
+                />
+                <FormControlLabel 
+                  control={<Switch defaultChecked />} 
+                  label={<Typography fontSize={{ xs: 12, sm: 13 }}>Real-time socket updates</Typography>} 
+                />
               </Stack>
             </Box>
           </Stack>
