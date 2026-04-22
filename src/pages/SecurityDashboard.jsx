@@ -1450,7 +1450,7 @@ export default function SecurityDashboard() {
                   flex: { xs: 1, sm: 'auto' }, minWidth: { xs: '50px', sm: 'auto' }
                 }}>
                 <span style={{ display: { xs: 'none', sm: 'inline' } }}>Scan QR</span>
-                <span style={{ display: { xs: 'inline', sm: 'none' } }}>QR</span>
+                
               </Button>
             </Tooltip>
 
@@ -1588,7 +1588,10 @@ export default function SecurityDashboard() {
           width={{ xs: '100vw', sm: 340 }} 
           sx={{ height: '100%', overflow: 'auto' }}
         >
-          <Typography variant="h6" fontWeight={800} mb={3} fontSize={{ xs: 16, sm: 18 }}>⚙️ Settings</Typography>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2.5}>
+            <Typography variant="h6" fontWeight={800} fontSize={{ xs: 16, sm: 18 }}>⚙️ Settings</Typography>
+            <IconButton size="small" onClick={() => setSettingsOpen(false)}><CloseIcon /></IconButton>
+          </Stack>
           <Stack spacing={3}>
             <Box>
               <Typography fontWeight={700} fontSize={{ xs: 12, sm: 13 }} mb={1.5}>🎨 Theme</Typography>
