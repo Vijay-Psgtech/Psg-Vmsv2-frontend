@@ -10,6 +10,7 @@ import {
   Visibility, VisibilityOff,
   Email as EmailIcon, Lock as LockIcon,
 } from "@mui/icons-material";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
 import { logger } from "../utils/logger";
@@ -248,6 +249,12 @@ export default function Login() {
         <Typography variant="h4" fontWeight={700} mb={1}>VPASS Login</Typography>
         <Typography variant="body2" color="text.secondary">
           Sign in to manage your facility
+        </Typography>
+        {/* Add back to home link with icon and label */}
+        <Typography variant="caption" color="text.secondary">
+          <a href="/book-visit" rel="noopener noreferrer">
+            <ArrowBackIcon fontSize="small" /> Back to Home
+          </a>
         </Typography>
       </Box>
 
