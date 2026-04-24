@@ -333,7 +333,7 @@ export default function Login() {
             </Button>
 
             {/* type="button" — must NOT submit the form */}
-            <Button
+            {/* <Button
               fullWidth variant="outlined" size="large" type="button"
               onClick={handleDemoLogin} disabled={isLoading}
               sx={{ textTransform: "none", color: "#10b981", borderColor: "#10b981" }}
@@ -351,7 +351,7 @@ export default function Login() {
               <Typography variant="caption" display="block">
                 <strong>Password:</strong> Admin123
               </Typography>
-            </Box>
+            </Box> */}
           </form>
         </TabPanel>
 
