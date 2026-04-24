@@ -23,6 +23,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import bannerImage from "../assets/image_1.webp";
+import api from "../utils/api";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -514,15 +515,11 @@ export default function PSGVisitorBookingPortal() {
 
   // Data
   const [hosts, setHosts] = useState([]);
+  const [gates, setGates] = useState([]);
   const [dataLoading, setDL] = useState(true);
   const [hostQ, setHostQ] = useState("");
   const [stats, setStats] = useState({ today: 0, pending: 0, inside: 0 });
   const [waitN, setWaitN] = useState(0);
-  const [gates] = useState([
-    { id: "GATE-1", name: "Main Gate – Administration Building" },
-    { id: "GATE-2", name: "East Gate – Engineering Block" },
-    { id: "GATE-3", name: "North Gate – Research Centre" },
-  ]);
   const fetched = useRef(false);
 
   // OTP
@@ -542,6 +539,20 @@ export default function PSGVisitorBookingPortal() {
 
   const [navOpen, setNavOpen] = useState(false);
   const [visCount, cntRef] = useCounter(1247);
+
+  // fetch gates 
+  const fetchGates = async () => {
+    try {
+      const res = await api.get("/gate");
+      setGates(res.data || []);
+    } catch (err) {
+      console.error("Error fetching gates:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchGates();
+  }, []);
 
   // OS dark mode
   useEffect(() => {
@@ -787,7 +798,7 @@ export default function PSGVisitorBookingPortal() {
 
   // Derived
   const selectedHost = hosts.find((h) => h._id === form.hostId);
-  const selectedGate = gates.find((g) => g.id === form.gate);
+  const selectedGate = gates.find((g) => g.code === form.gate);
   const filtHosts = hosts.filter(
     (h) =>
       !hostQ ||
@@ -1347,7 +1358,9 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           id="mobile-menu"
           className={`mobile-menu${navOpen ? " open" : ""}`}
           style={{
-            backgroundColor: dark ? "rgba(15,23,42,.95)" : "rgba(255,255,255,.95)",
+            backgroundColor: dark
+              ? "rgba(15,23,42,.95)"
+              : "rgba(255,255,255,.95)",
           }}
         >
           <div className="nav-button-group mobile">
@@ -1415,28 +1428,34 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <div className="sec">
           <div className="wrap" style={{ maxWidth: 560 }}>
             <div className="card fu">
-              <h2 style={{
-                fontSize: "clamp(20px,4vw,24px)",
-                fontWeight: 800,
-                marginBottom: "clamp(4px,1vw,6px)",
-                margin: "0 0 clamp(4px,1vw,6px) 0",
-              }}>
+              <h2
+                style={{
+                  fontSize: "clamp(20px,4vw,24px)",
+                  fontWeight: 800,
+                  marginBottom: "clamp(4px,1vw,6px)",
+                  margin: "0 0 clamp(4px,1vw,6px) 0",
+                }}
+              >
                 {t.trackTitle}
               </h2>
-              <p style={{
-                color: "var(--t2)",
-                fontSize: "clamp(12px,1.3vw,14px)",
-                marginBottom: "clamp(16px,2vw,24px)",
-                margin: "0 0 clamp(16px,2vw,24px) 0",
-              }}>
+              <p
+                style={{
+                  color: "var(--t2)",
+                  fontSize: "clamp(12px,1.3vw,14px)",
+                  marginBottom: "clamp(16px,2vw,24px)",
+                  margin: "0 0 clamp(16px,2vw,24px) 0",
+                }}
+              >
                 {t.trackSub}
               </p>
-              <div style={{
-                display: "flex",
-                gap: "clamp(6px,1.2vw,10px)",
-                marginBottom: "clamp(12px,2vw,16px)",
-                flexWrap: "wrap",
-              }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "clamp(6px,1.2vw,10px)",
+                  marginBottom: "clamp(12px,2vw,16px)",
+                  flexWrap: "wrap",
+                }}
+              >
                 <input
                   className="inp"
                   style={{
@@ -1818,7 +1837,12 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
             }}
           >
             <div className="wrap">
-              <div style={{ textAlign: "center", marginBottom: "clamp(12px,2vw,18px)" }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  marginBottom: "clamp(12px,2vw,18px)",
+                }}
+              >
                 <span
                   style={{
                     display: "inline-flex",
@@ -1891,20 +1915,29 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           {/* ══ HOW IT WORKS ══════════════════════════════════════════════ */}
           <div className="sec">
             <div className="wrap">
-              <div style={{ textAlign: "center", marginBottom: "clamp(32px,6vw,50px)" }}>
-                <h2 style={{
-                  fontSize: "clamp(24px,5vw,34px)",
-                  fontWeight: 800,
-                  marginBottom: "clamp(6px,1.2vw,8px)",
-                  margin: "0 0 clamp(6px,1.2vw,8px) 0",
-                }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  marginBottom: "clamp(32px,6vw,50px)",
+                }}
+              >
+                <h2
+                  style={{
+                    fontSize: "clamp(24px,5vw,34px)",
+                    fontWeight: 800,
+                    marginBottom: "clamp(6px,1.2vw,8px)",
+                    margin: "0 0 clamp(6px,1.2vw,8px) 0",
+                  }}
+                >
                   {t.howTitle}
                 </h2>
-                <p style={{
-                  color: "var(--t2)",
-                  fontSize: "clamp(13px,1.5vw,15px)",
-                  margin: 0,
-                }}>
+                <p
+                  style={{
+                    color: "var(--t2)",
+                    fontSize: "clamp(13px,1.5vw,15px)",
+                    margin: 0,
+                  }}
+                >
                   {t.howSub}
                 </p>
               </div>
@@ -2119,7 +2152,14 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: "clamp(16px,3vw,22px)", marginBottom: "clamp(8px,1.5vw,10px)" }}>🎉</div>
+                  <div
+                    style={{
+                      fontSize: "clamp(16px,3vw,22px)",
+                      marginBottom: "clamp(8px,1.5vw,10px)",
+                    }}
+                  >
+                    🎉
+                  </div>
                   <div
                     style={{
                       fontSize: "clamp(48px,8vw,68px)",
@@ -2192,20 +2232,29 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           {/* ══ BOOKING FORM ══════════════════════════════════════════════ */}
           <div className="sec" id="bform" role="main">
             <div className="wrap" style={{ maxWidth: 720 }}>
-              <div style={{ textAlign: "center", marginBottom: "clamp(24px,4vw,36px)" }}>
-                <h2 style={{
-                  fontSize: "clamp(24px,4.5vw,32px)",
-                  fontWeight: 800,
-                  marginBottom: "clamp(6px,1.2vw,8px)",
-                  margin: "0 0 clamp(6px,1.2vw,8px) 0",
-                }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  marginBottom: "clamp(24px,4vw,36px)",
+                }}
+              >
+                <h2
+                  style={{
+                    fontSize: "clamp(24px,4.5vw,32px)",
+                    fontWeight: 800,
+                    marginBottom: "clamp(6px,1.2vw,8px)",
+                    margin: "0 0 clamp(6px,1.2vw,8px) 0",
+                  }}
+                >
                   {t.bookTitle}
                 </h2>
-                <p style={{
-                  color: "var(--t2)",
-                  fontSize: "clamp(13px,1.5vw,15px)",
-                  margin: 0,
-                }}>
+                <p
+                  style={{
+                    color: "var(--t2)",
+                    fontSize: "clamp(13px,1.5vw,15px)",
+                    margin: 0,
+                  }}
+                >
                   {t.bookSub}
                 </p>
               </div>
@@ -2668,8 +2717,8 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
                           >
                             <option value="">Select gate</option>
                             {gates.map((g) => (
-                              <option key={g.id} value={g.id}>
-                                {g.name}
+                              <option key={g.code} value={g.code}>
+                                {g.code} - {g.name}
                               </option>
                             ))}
                           </select>
@@ -2933,7 +2982,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
                           ),
                         ],
                         [t.facLabel, selectedHost?.name || "N/A"],
-                        [t.gateLabel, selectedGate?.name || form.gate],
+                        [t.gateLabel, selectedGate?.code ? `${selectedGate.code} - ${selectedGate.name}` : form.gate],
                         [t.statusL, null],
                       ].map(([l, v], i) => (
                         <div
@@ -3130,11 +3179,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
             style={{
               background: dark ? "#0f172a" : "#1e293b",
               color: "#94a3b8",
-              padding: "clamp(36px,6vw,56px) clamp(16px,4vw,24px) clamp(20px,3vw,28px)",
+              padding:
+                "clamp(36px,6vw,56px) clamp(16px,4vw,24px) clamp(20px,3vw,28px)",
             }}
           >
             <div className="wrap">
-              <div className="g2" style={{ marginBottom: "clamp(24px,4vw,36px)" }}>
+              <div
+                className="g2"
+                style={{ marginBottom: "clamp(24px,4vw,36px)" }}
+              >
                 <div>
                   <div
                     style={{
